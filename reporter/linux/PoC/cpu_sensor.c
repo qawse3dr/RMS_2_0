@@ -52,7 +52,9 @@ int main() {
 		
 		for(int i=0; i<CPU_CORES; i++){
 			printf("cpu%d usage: %.2f%%\n", i,  100.0 * (cpu_core_usage[i].used - cpu_core_usage_old[i].used)/(cpu_core_usage[i].total - cpu_core_usage_old[i].total));
+			cpu_core_usage_old[i] = cpu_core_usage[i];
 		}
+		master_cpu_usage_old = master_cpu_usage;
 		sleep(3);
 
 	};
