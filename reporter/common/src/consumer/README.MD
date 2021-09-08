@@ -1,0 +1,1 @@
+Consumers will gather the data using the functions from the os 
