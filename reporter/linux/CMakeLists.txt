@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 set(SRC_FILES
     "src/reporter/ram_reporter.cpp"
+    "src/reporter/cpu_reporter.cpp"
+
     "isTrue.cpp")
 
 add_library(rms_platform STATIC

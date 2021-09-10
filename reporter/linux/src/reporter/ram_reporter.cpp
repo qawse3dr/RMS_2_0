@@ -1,6 +1,5 @@
 #include "platform/reporter/ram_reporter.h"
 
-
 #include <iostream>
 
 namespace rms {
