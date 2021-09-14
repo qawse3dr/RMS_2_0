@@ -28,19 +28,20 @@ struct CpuUsageStats  {
     float used_;
   };
   struct usage master_cpu_usage_;
-  std::unique_ptr<struct usage[]> cpu_core_usage_;
+  std::shared_ptr<struct usage[]> cpu_core_usage_;
+  short cpu_core_count_;
 };
 
 /**
  *  Reporter that returns 2 ram usage status
  *  1 for main ram, 1 for swap
  */
-class CpuReporter : public Reporter<CpuUsageStats,1>{
+class CpuReporter : public Reporter<struct CpuUsageStats,1>{
 
  private:
 
   int cpu_core_count_;
-  CpuUsageStats stats;
+  struct CpuUsageStats stats;
 
  public:
   CpuReporter(const CpuReporter&) = delete;

@@ -2,8 +2,23 @@
 #include <sys/sysinfo.h>
 #include <sys/utsname.h> 
 #include <sys/vfs.h>
+#include <sys/types.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
 #include <string.h>
 #include <stdio.h>
+
+
+const char* getIP(struct sockaddr* sa, char name[INET6_ADDRSTRLEN]) {
+  if(sa->sa_family == AF_INET){
+    return inet_ntop(sa->sa_family, &((struct sockaddr_in*)sa)->sin_addr, name, INET6_ADDRSTRLEN);
+  } else if( sa->sa_family == AF_INET6) {
+    return inet_ntop(sa->sa_family, &((struct sockaddr_in6*)sa)->sin6_addr, name, INET6_ADDRSTRLEN);
+  }
+  
+}
+
+
 int main() {
 
     struct sysinfo info;
@@ -43,17 +58,21 @@ int main() {
     //Network Info
     printf("\nNextwork Interfaces\n");
     printf("------------\n");
-    char interface_name[128];
-    long ingess_bytes, egress_bytes;
-    fp = fopen("/proc/net/dev", "r");
-    for(int i = 0; i < 2; i++) {
-      while((char)fgetc(fp) != '\n');
-    }
-    while( EOF != fscanf(fp, " %s %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d\n",interface_name)) {
-        interface_name[strlen(interface_name)-1] = '\0';
-        printf("Interface Found: %s\n", interface_name);
-    }
-    fclose(fp);
+
+    struct ifaddrs* ifap;
+    getifaddrs(&ifap);
+    struct ifaddrs* next = ifap;
+    
+    do {
+      if(next->ifa_addr->sa_family != AF_INET) continue;
+      printf("\nInterface Found: %s\n", next->ifa_name);
+      char name[INET6_ADDRSTRLEN];
+      getIP(next->ifa_addr, name);
+      printf("ip addr %s\n", name);
+      }while(next = next->ifa_next);
+    
+    freeifaddrs(ifap);
+  
 
 
     // CPU info

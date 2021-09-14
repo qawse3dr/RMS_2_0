@@ -7,6 +7,9 @@ namespace reporter {
 class RamConsumer : public Consumer<RamReporter> {
 
 
+ public:
+  RamConsumer();
+  
  protected:
   void consume() override;
 };

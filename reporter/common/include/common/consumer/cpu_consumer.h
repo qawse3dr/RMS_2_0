@@ -12,13 +12,17 @@
 #ifndef REPORTER_COMMON_CONSUMER_CPU_CONSUMER_H_
 #define REPORTER_COMMON_CONSUMER_CPU_CONSUMER_H_
 
+#include "common/consumer/consumer.h"
+#include "platform/reporter/cpu_reporter.h"
+
 namespace rms {
 namespace reporter {
 
-#include "platform/reporter/cpu_reporter.h"
 
 class CpuConsumer : public Consumer<CpuReporter> {
 
+ public:
+  CpuConsumer(int core_count);
 
  protected:
   void consume() override;

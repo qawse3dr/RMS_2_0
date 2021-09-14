@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(SRC_FILES
-    "src/http_client.cpp"
+    "src/request_client.cpp"
     "src/util.cpp"
   )
 

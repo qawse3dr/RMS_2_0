@@ -9,28 +9,30 @@
   * @author: qawse3dr a.k.a Larry Milne
 */
 
-#ifndef _RMS_COMMON_CPU_DATA_H_
-#define _RMS_COMMON_CPU_DATA_H_
-
-#include <cstdint>
+#ifndef _RMS_COMMON_NETWORK_DATA_H_
+#define _RMS_COMMON_NETWORK_DATA_H_
 
 namespace rms {
-namespace common{
+namespace common {
 
-struct CpuUsageData {
-  std::uint8_t core_num_;
-  float usage_;
+/** 
+ * network usage info for a given interface
+ * usage will be  given in bytes
+ **/
+struct NetworkUsageData {
+  char name[16];
+  struct  {
+    long up_;
+    long down_;
+  } usage;
 };
-
-
-
-}  // namespace rms_common
+}  // namespace common
 }  // namespace rms
 
 
 
 
-#endif  // _RMS_COMMON_CPU_DATA_H_
+#endif  // _RMS_COMMON_NETWORK_DATA_H_
 
 
 

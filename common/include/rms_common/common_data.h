@@ -9,28 +9,28 @@
   * @author: qawse3dr a.k.a Larry Milne
 */
 
-#ifndef _RMS_COMMON_CPU_DATA_H_
-#define _RMS_COMMON_CPU_DATA_H_
+#ifndef _RMS_COMMON_COMMON_DATA_H_
+#define _RMS_COMMON_COMMON_DATA_H_
 
 #include <cstdint>
 
 namespace rms {
-namespace common{
+namespace common {
 
-struct CpuUsageData {
-  std::uint8_t core_num_;
-  float usage_;
+
+struct VersionData {
+  std::uint8_t release;
+  std::uint8_t major;
+  std::uint8_t minor;
 };
 
-
-
-}  // namespace rms_common
+}  // namespace common
 }  // namespace rms
 
 
 
 
-#endif  // _RMS_COMMON_CPU_DATA_H_
+#endif  // _RMS_COMMON_COMMON_DATA_H_
 
 
 

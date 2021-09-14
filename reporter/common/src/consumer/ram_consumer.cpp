@@ -4,14 +4,16 @@
 #include <unistd.h>
 
 #include "rms_common/util.h"
-#include "rms_common/http_client.h"
+#include "rms_common/request_client.h"
 
 namespace rms {
 namespace reporter {
 
+RamConsumer::RamConsumer() : Consumer(std::make_unique<RamReporter>()) {};
+
 void RamConsumer::consume() {
-  while(isConsuming) {
-    auto usage = reporter.report() ;
+  while(is_consuming_) {
+    auto usage = reporter_->report() ;
     
     common::Request req;
     rms::common::RequestData ram_usage, swap_usage;
@@ -33,7 +35,7 @@ void RamConsumer::consume() {
     }
 
     // Send request
-    common::sendRequest(req);
+    common::sendRequest(common::RequestProtocol::kHTTP, std::move(req));
 
     //TODO make config maybe this should be grabbed from the server
     sleep(1);
