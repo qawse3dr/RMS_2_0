@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_CXX_STANDARD 20)
 
 set(SRC_FILES 
     "src/main.cpp"
     
     # Consumers
     "src/consumer/ram_consumer.cpp"
+    "src/consumer/cpu_consumer.cpp"
+
 
 
 )

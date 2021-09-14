@@ -8,8 +8,15 @@ namespace rms {
 namespace common {
 
 
+enum class RequestProtocol {
+    kTCP,
+    kHTTP,
+};
 
-void sendRequest(const Request& req);
+
+
+void sendRequest(const RequestProtocol& type, Request&& req);
+void pollRequests();
 
 }  // namespace common
 }  // namespace rms

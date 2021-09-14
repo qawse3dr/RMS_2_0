@@ -19,7 +19,7 @@ public:
   virtual std::array<T, N> report() = 0;
 
 
-  Reporter operator=(const Reporter&) = delete;
+  Reporter& operator=(const Reporter&) = delete;
   Reporter&& operator=(Reporter&&) = delete;
 };
 
