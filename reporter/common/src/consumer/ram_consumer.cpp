@@ -35,7 +35,7 @@ void RamConsumer::consume() {
     }
 
     // Send request
-    common::sendRequest(common::RequestProtocol::kHTTP, std::move(req));
+    common::request_client_.sendRequest(common::RequestProtocol::kLOG, std::move(req));
 
     //TODO make config maybe this should be grabbed from the server
     sleep(1);

@@ -64,7 +64,7 @@ void CpuConsumer::consume() {
     }
 
     // Send request
-    common::sendRequest(common::RequestProtocol::kHTTP, std::move(req));
+    common::request_client_.sendRequest(common::RequestProtocol::kLOG, std::move(req));
 
     //Copies over data to old usage
     copyCpuUsageStats(usage, old_stats);

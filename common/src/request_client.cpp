@@ -1,9 +1,7 @@
 #include "rms_common/request_client.h"
 
 #include <iostream>
-#include <queue>
 #include <tuple>
-#include <semaphore>
 
 #include "rms_common/request_data.h"
 
@@ -15,12 +13,11 @@
 namespace rms {
 namespace common {
 
+RequestClient request_client_;
 
-// Semaphores for requests
-std::binary_semaphore RW_semaphore(1);
-std::binary_semaphore request_exists(0);
+RequestClient::RequestClient(): rw_semaphore_(1), request_counter_(0), poll_requests_(false) { }
 
-static void sendHttpRequest(const Request& req) {
+int RequestClient::sendLogRequest(const Request& req) {
 
   std::cout << "\n\n---------------------------------------------"  << std::endl;
 
@@ -41,45 +38,72 @@ static void sendHttpRequest(const Request& req) {
     }
   }
   std::cout << "---------------------------------------------"  << std::endl;
-
+  return 0;
 }
 
-static void sendTcpRequest(const Request& req) {
-
+int RequestClient::sendTcpRequest(const Request& req) {
+  return 0;
 }
 
-std::queue<std::tuple<RequestProtocol,Request>> Request_Queue;
-void sendRequest(const RequestProtocol& type, Request&& req) {
+int RequestClient::sendHttpRequest(const Request& req) {
+  return 0;
+}
+
+
+void RequestClient::sendRequest(const RequestProtocol& type, Request&& req) {
   
   // Critical write
-  RW_semaphore.acquire();
-  Request_Queue.emplace(std::make_tuple(type, req));
-  RW_semaphore.release();
+  rw_semaphore_.acquire();
+  request_queue_.emplace(std::make_tuple(type, req));
+  rw_semaphore_.release();
   
   // Add a request to semaphore
-  request_exists.release();
+  request_counter_.release();
 }
 
 
-void pollRequests() {
+void RequestClient::pollRequests() {
+  bool failed = false;
   while(true) {
-    request_exists.acquire();
-    RW_semaphore.acquire();
+    request_counter_.acquire();
+
+    if (poll_requests_.load() == false) break;
+    rw_semaphore_.acquire();
 
     
-    std::tuple<RequestProtocol, Request>& req = Request_Queue.front();
+    std::tuple<RequestProtocol, Request>& req = request_queue_.front();
     switch(std::get<GET_REQUEST_TYPE>(req)) {
       case RequestProtocol::kHTTP:
-        sendHttpRequest(std::get<GET_REQUEST_VALUE>(req));
+        failed = sendHttpRequest(std::get<GET_REQUEST_VALUE>(req));
         break;
       case RequestProtocol::kTCP:
-        sendTcpRequest(std::get<GET_REQUEST_VALUE>(req));
+        failed = sendTcpRequest(std::get<GET_REQUEST_VALUE>(req));
+        break;
+      case RequestProtocol::kLOG:
+        failed = sendLogRequest(std::get<GET_REQUEST_VALUE>(req));
         break;
     }
     // TODO: check for failure to send later and if it fails dont pop and release request_exists semaphore.
-    Request_Queue.pop();
-    RW_semaphore.release();
+    if(!failed) {
+      request_queue_.pop();
+    } else { // Failed to send add back the value to the counter and print error message
+      std::cerr << "Warning:: Failed to send Request" << std::endl;
+      request_counter_.release();
+    }
+    rw_semaphore_.release();
   }
+}
+
+void RequestClient::start(){
+  poll_requests_.store(true);
+  work_thread_ = std::thread(&RequestClient::pollRequests, this);
+}
+
+void RequestClient::stop(){
+  poll_requests_.store(false);
+  // Add one to request_counter to stop it from getting stuck
+  request_counter_.release();
+  work_thread_.join();
 }
 
 }  // namespace common
