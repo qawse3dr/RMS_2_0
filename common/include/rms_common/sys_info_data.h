@@ -29,7 +29,7 @@ enum class Architecture {
 
 };
 
-struct CpuInfo{
+struct CpuInfo {
   std::uint8_t cpu_cores_;
   std::uint16_t cache_size_;
   Architecture arch_;
@@ -44,14 +44,24 @@ struct StorageInfo {
 };
 
 struct NetworkInfo {
-
+  char interface_name_[16];
+  bool is_ipv6_;
+  union {
+    std::uint64_t ip; 
+    std::uint32_t ipv6[4];
+  };
 };
 
 struct TemperatureInfo {
-
+  char name[16];
+  char path[16];
 };
 
 struct SystemInfo {
+
+  // Uptime
+  long uptime_;
+  
   //System names
   char system_name_[32];
   char host_name_[32];

@@ -9,16 +9,27 @@
 
 #include <thread>
 #include <chrono>
+#include <csignal>
 
-bool isTrue(bool);
+
+
+static rms::reporter::CpuConsumer cpu_consumer(4);
+static rms::reporter::RamConsumer ram_consumer;
+
+
+static void sigint_handler(int sig) {
+    cpu_consumer.stop();
+    ram_consumer.stop();
+
+    rms::common::request_client_.stop();
+    exit(0);
+}
 
 int main() {
 
     std::cout << "Welcome to RMS 2.0" << std::endl;
-    std::cout << "True is: " << isTrue(true) << std::endl;
 
-    rms::reporter::CpuConsumer cpu_consumer(4);
-    rms::reporter::RamConsumer ram_consumer;
+    signal(SIGINT, sigint_handler);
 
 
     //start request_client_
@@ -27,17 +38,6 @@ int main() {
     cpu_consumer.start();
     ram_consumer.start();
 
-
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-
-    
-
-    cpu_consumer.stop();
-    ram_consumer.stop();
-
-    rms::common::request_client_.stop();
-
-    std::cout << "sizeOf RequestData " << sizeof(struct rms::common::RequestData) << std::endl;
+    sleep(1000000);
     return 0;
 }
