@@ -14,6 +14,7 @@
 
 
 #include <vector>
+#include <cstring>
 
 #include "rms_common/common_data.h"
 
@@ -26,7 +27,7 @@ enum class Architecture {
   kX86,
   kArm,
   KArm64,
-
+  kUnknown,
 };
 
 struct CpuInfo {
@@ -37,6 +38,7 @@ struct CpuInfo {
 
 
 struct StorageInfo {
+
   char dev_[12];
   char fs_type_[8];
   std::uint64_t free_;

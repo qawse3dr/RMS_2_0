@@ -3,6 +3,7 @@
 #include <iostream>
 #include <tuple>
 #include <cstring>
+#include <arpa/inet.h>
 
 #include "rms_common/request_data.h"
 #include "rms_common/rms_version_info.h"
@@ -17,15 +18,22 @@ namespace common {
 
 RequestClient request_client_;
 
-RequestClient::RequestClient(): rw_semaphore_(1), request_counter_(0), poll_requests_(false) { }
+RequestClient::RequestClient(): rw_semaphore_(1), request_counter_(0), poll_requests_(false), tcp_setup_(false) { }
+
+
+std::mutex logger_mutex;
 
 int RequestClient::sendLogRequest(const Request& req) {
-
+  logger_mutex.lock();
   std::cout << "\n\n---------------------------------------------"  << std::endl;
 
   std::cout << "Incoming Request: " << req.header.timestamp << std::endl;
   std::cout << "---------------------------------------------"  << std::endl;
 
+  char IP_name[INET6_ADDRSTRLEN];
+  struct in6_addr ipv6_addr;
+  struct in_addr ip_addr;
+  
   for (int i = 0; i < req.header.data_count; i++) {
     std::cout << "Data unit: " << i << std::endl;
     switch(req.data[i].type) {
@@ -37,13 +45,87 @@ int RequestClient::sendLogRequest(const Request& req) {
         std::cout << "Core Num: " << req.data[i].cpu_usage_data.core_num_ << std::endl;
         std::cout << "Usage: " <<  req.data[i].cpu_usage_data.usage_ << "%" << std::endl;
         break;
+      case RequestTypes::kCpuVendorName:
+        std::cout << "Vendor Name: " << req.data[i].str_ << std::endl;
+        break;
+      case RequestTypes::kCpuName:
+        std::cout << "CPU Name: " << req.data[i].str_ << std::endl;
+        break;
+      case RequestTypes::kCpuInfo:
+        std::cout << "Cpu Core Count: " << static_cast<int>(req.data[i].cpu_info.cpu_cores_) << std::endl;
+        std::cout << "CPU arch: " << static_cast<int>(req.data[i].cpu_info.arch_)  << std::endl;
+        std::cout << "CPU cache: " << req.data[i].cpu_info.cache_size_  << std::endl;
+        break;
+      case RequestTypes::kSysUptime:
+        std::cout << "Sys Uptime: " << req.data[i].long_ << std::endl;
+        break;
+      case RequestTypes::kSysName:
+        std::cout << "Sys Name: " << req.data[i].str_ << std::endl;
+        break;
+      case RequestTypes::kSysHostName:
+        std::cout << "Sys HostName: " << req.data[i].str_ << std::endl;
+        break;
+      case RequestTypes::kSysOsVersion:
+        std::cout << "Sys OS version: " << static_cast<int>(req.data[i].version.major) << "." << static_cast<int>(req.data[i].version.minor) << "." << static_cast<int>(req.data[i].version.release) << std::endl;
+        break;
+      case RequestTypes::kSysClientVersion:
+        std::cout << "Sys Client version: " << static_cast<int>(req.data[i].version.major) << "." << static_cast<int>(req.data[i].version.minor) << "." << static_cast<int>(req.data[i].version.release) << std::endl;
+        break;
+      case RequestTypes::kSysStorage:
+        std::cout << "Storage Device: " << req.data[i].storage_info.dev_ << " | " << req.data[i].storage_info.fs_type_ << std::endl;
+        std::cout << "Storage Space: " << req.data[i].storage_info.free_ << "/" << req.data[i].storage_info.total_ << std::endl;
+        break;
+      case RequestTypes::kNetworkAdaptors:
+        std::cout << "Network Adaptor: " << req.data[i].network_info.interface_name_ << std::endl;
+        if(req.data[i].network_info.is_ipv6_) {
+          ipv6_addr.__in6_u.__u6_addr32[0] = req.data[i].network_info.ipv6[0];
+          ipv6_addr.__in6_u.__u6_addr32[1] = req.data[i].network_info.ipv6[1];
+          ipv6_addr.__in6_u.__u6_addr32[2] = req.data[i].network_info.ipv6[2];
+          ipv6_addr.__in6_u.__u6_addr32[3] = req.data[i].network_info.ipv6[3];
+          inet_ntop(AF_INET6, &ipv6_addr, IP_name, INET6_ADDRSTRLEN);
+        } else {
+          ip_addr.s_addr = req.data[i].network_info.ip;
+          inet_ntop(AF_INET, &ip_addr, IP_name, INET6_ADDRSTRLEN);
+        }
+        std::cout << "IP: " << IP_name << std::endl;
+        break;
+      case RequestTypes::kSysTemps:
+        break;
+      default:
+        std::cout << "Not impl " << static_cast<int>(req.data[i].type) << std::endl;
     }
+    std::cout << std::endl;
   }
   std::cout << "---------------------------------------------"  << std::endl;
+  logger_mutex.unlock();
   return 0;
 }
 
 int RequestClient::sendTcpRequest(const Request& req) {
+  if (!tcp_setup_) {
+    if ((tcp_sockfd_ = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+      perror("socket failed to init");
+      exit(EXIT_FAILURE);
+    }
+
+    tcp_address_.sin_family = AF_INET;
+    tcp_address_.sin_port = htons(1234);
+
+    if( inet_pton(AF_INET, "127.0.0.1", &tcp_address_.sin_addr) < 0) {
+      perror("Invalid addr");
+      exit(EXIT_FAILURE);
+    }
+
+    if(connect(tcp_sockfd_, (struct sockaddr*)&tcp_address_, sizeof(tcp_address_)) < 0) {
+      perror("connect failure");
+      exit(EXIT_FAILURE);
+    }
+
+    
+
+  }
+
+  send(tcp_sockfd_, "test", strlen("test"), 0);
   return 0;
 }
 
@@ -106,6 +188,10 @@ void RequestClient::stop(){
   // Add one to request_counter to stop it from getting stuck
   request_counter_.release();
   work_thread_.join();
+
+  if(tcp_setup_) {
+    close(tcp_sockfd_);
+  }
 }
 
 struct Request SysInfoToRequest(const struct SystemInfo& sys_info){
@@ -159,20 +245,20 @@ struct Request SysInfoToRequest(const struct SystemInfo& sys_info){
 
   // Storage
   for (int i = 0; i < sys_info.storage_info_.size(); i++) {
-    data.storage_info = std::move(sys_info.storage_info_[0]);
+    data.storage_info = std::move(sys_info.storage_info_[i]);
     data.type = RequestTypes::kSysStorage;
     req.data.push_back(data);
   }
 
   // client_version
   for (int i = 0; i < sys_info.network_info_.size(); i++) {
-    data.network_info = std::move(sys_info.network_info_[0]);
+    data.network_info = std::move(sys_info.network_info_[i]);
     data.type = RequestTypes::kNetworkAdaptors;
     req.data.push_back(data);
   }
 
   for (int i = 0; i < sys_info.temp_info_.size(); i++) {
-    data.temp_info = std::move(sys_info.temp_info_[0]);
+    data.temp_info = std::move(sys_info.temp_info_[i]);
     data.type = RequestTypes::kSysTemps;
     req.data.push_back(data);
   }

@@ -13,6 +13,9 @@
 #define _INCLUDE_COMMON_CONSUMER_SYS_CONSUMER_H_
 
 #include "common/consumer/consumer.h"
+
+#include <condition_variable>
+
 #include "platform/reporter/sys_reporter.h"
 
 namespace rms {
@@ -23,6 +26,13 @@ class SysConsumer : public Consumer<SysReporter> {
 
  public:
   SysConsumer();
+  
+  std::condition_variable consume_cond_;
+  std::mutex consume_mutex_;
+
+  void triggerConsume();
+
+  int stop() override;
   
  protected:
   void consume() override;

@@ -7,6 +7,8 @@
 #include <semaphore>
 #include <atomic>
 #include <thread>
+#include <arpa/inet.h>
+
 
 #include "rms_common/request_data.h"
 
@@ -32,7 +34,11 @@ class RequestClient {
 
   std::queue<std::tuple<RequestProtocol,Request>> request_queue_;
 
-
+  // Tcp Request vars
+  bool tcp_setup_;
+  int tcp_sockfd_;
+  int tcp_opt_;
+  struct sockaddr_in tcp_address_;
 
   int sendHttpRequest(const Request& req);
   int sendTcpRequest(const Request& req);

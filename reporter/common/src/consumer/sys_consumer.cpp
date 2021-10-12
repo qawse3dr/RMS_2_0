@@ -20,14 +20,38 @@ SysConsumer::SysConsumer() : Consumer(std::make_unique<SysReporter>()) {};
 
 void SysConsumer::consume() {
   
-  auto usage = reporter_->report() ;
+  while(is_consuming_) {
+    auto usage = reporter_->report() ;
 
-  auto req = common::SysInfoToRequest(usage[0]);
-  // Send request
-  common::request_client_.sendRequest(common::RequestProtocol::kLOG, std::move(req));
+    auto req = common::SysInfoToRequest(usage[0]);
+    // Send request
+    common::request_client_.sendRequest(common::RequestProtocol::kLOG, std::move(req));
 
+    //checks to make sure 
+    
 
+    std::unique_lock<std::mutex> lk(consume_mutex_);
+    if(is_consuming_)
+      consume_cond_.wait(lk);
+    lk.unlock();
+  }
 }
+
+
+int SysConsumer::stop() {
+    is_consuming_ = false;
+    triggerConsume();
+    work_thread_.join();
+    return 0;
+  
+}
+void SysConsumer::triggerConsume(){
+  consume_mutex_.lock();
+  consume_cond_.notify_one();
+  consume_mutex_.unlock();
+}
+
+
 
 
 } // namespace reporter
