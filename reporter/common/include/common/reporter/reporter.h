@@ -10,20 +10,18 @@ namespace reporter {
 
 template <class T, std::size_t N>
 class Reporter {
-
-public:
+ public:
   Reporter(const Reporter&) = delete;
   Reporter(Reporter&&) = delete;
   Reporter() = default;
 
   virtual std::array<T, N> report() = 0;
 
-
   Reporter& operator=(const Reporter&) = delete;
   Reporter&& operator=(Reporter&&) = delete;
 };
 
-} // namespace reporter
-} // namespace rms
+}  // namespace reporter
+}  // namespace rms
 
-#endif // _INCLUDE_COMMON_REPORTER
+#endif  // _INCLUDE_COMMON_REPORTER

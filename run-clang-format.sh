@@ -1,0 +1,1 @@
+clang-format -i `find -type f -name "*.[c,h]" -o -name "*.cpp" | grep -v build`  -Werror -style=file

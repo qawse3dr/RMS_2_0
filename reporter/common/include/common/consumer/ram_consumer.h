@@ -5,14 +5,12 @@ namespace rms {
 namespace reporter {
 
 class RamConsumer : public Consumer<RamReporter> {
-
-
  public:
   RamConsumer();
-  
+
  protected:
   void consume() override;
 };
 
-} // namespace reporter
-} // namespace rms
+}  // namespace reporter
+}  // namespace rms

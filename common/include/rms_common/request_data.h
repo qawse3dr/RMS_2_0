@@ -2,21 +2,21 @@
 #ifndef _COMMON_INCLUDE_RMS_COMMON_REQUEST_DATA_H_
 #define _COMMON_INCLUDE_RMS_COMMON_REQUEST_DATA_H_
 
-#include "rms_common/ram_data.h"
-#include "rms_common/cpu_data.h"
-#include "rms_common/sys_info_data.h"
-
 #include <vector>
+
+#include "rms_common/cpu_data.h"
+#include "rms_common/ram_data.h"
+#include "rms_common/sys_info_data.h"
 
 namespace rms {
 namespace common {
 
 enum class RequestTypes {
   // Ram Info
-  kRamUsage = 100, // struct RamData;
-  
+  kRamUsage = 100,  // struct RamData;
+
   // CPU Info
-  kCpuUsage = 200, // struct CpuUsageData
+  kCpuUsage = 200,  // struct CpuUsageData
   kCpuInfo,
   kCpuVendorName,
   kCpuName,
@@ -37,8 +37,6 @@ enum class RequestTypes {
   kSysOsVersion = 500,
   kSysClientVersion,
   kSysServerVersion,
-
-  
 
   kUnknown = 1000,
 };
@@ -62,7 +60,6 @@ struct RequestData {
     struct VersionData version;
     char str_[32];
     long long_;
-
   };
 };
 
@@ -71,10 +68,7 @@ struct Request {
   std::vector<struct RequestData> data;
 };
 
+}  // namespace common
+}  // namespace rms
 
-} // namespace common
-} // namespace rms
-
-
-
-#endif //_COMMON_INCLUDE_RMS_COMMON_REQUEST_DATA_H_
+#endif  //_COMMON_INCLUDE_RMS_COMMON_REQUEST_DATA_H_

@@ -16,4 +16,4 @@ struct RamData {
 }  // namespace common
 }  // namespace rms
 
-#endif //_COMMON_INCLUDE_RMS_COMMON_RAM_DATA_H_
+#endif  //_COMMON_INCLUDE_RMS_COMMON_RAM_DATA_H_

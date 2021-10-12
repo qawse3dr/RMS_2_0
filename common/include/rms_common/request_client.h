@@ -1,30 +1,21 @@
 #ifndef _COMMON_INCLUDE_RMS_COMMON_HTTP_CLIENT_H_
 #define _COMMON_INCLUDE_RMS_COMMON_HTTP_CLIENT_H_
 
-
-
-#include <queue>
-#include <semaphore>
-#include <atomic>
-#include <thread>
 #include <arpa/inet.h>
 
+#include <atomic>
+#include <queue>
+#include <semaphore>
+#include <thread>
 
 #include "rms_common/request_data.h"
 
 namespace rms {
 namespace common {
 
-
-enum class RequestProtocol {
-    kTCP,
-    kHTTP,
-    kLOG
-};
-
+enum class RequestProtocol { kTCP, kHTTP, kLOG };
 
 class RequestClient {
-
  private:
   // Semaphores for requests
   std::binary_semaphore rw_semaphore_;
@@ -32,7 +23,7 @@ class RequestClient {
   std::atomic_bool poll_requests_;
   std::thread work_thread_;
 
-  std::queue<std::tuple<RequestProtocol,Request>> request_queue_;
+  std::queue<std::tuple<RequestProtocol, Request>> request_queue_;
 
   // Tcp Request vars
   bool tcp_setup_;
@@ -45,6 +36,7 @@ class RequestClient {
   int sendLogRequest(const Request& req);
 
   void pollRequests();
+
  public:
   RequestClient();
 
@@ -52,7 +44,6 @@ class RequestClient {
 
   void start();
   void stop();
-
 };
 
 extern RequestClient request_client_;
@@ -60,7 +51,4 @@ extern RequestClient request_client_;
 }  // namespace common
 }  // namespace rms
 
-
-
 #endif  // _COMMON_INCLUDE_RMS_COMMON_HTTP_CLIENT_H_
-
