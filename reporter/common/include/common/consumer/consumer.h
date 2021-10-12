@@ -22,12 +22,11 @@ namespace reporter {
  */
 template <class R>
 class Consumer {
-
- private:
-  std::thread work_thread_;
+  
  protected:
   std::unique_ptr<R> reporter_;
   bool is_consuming_ = false;
+  std::thread work_thread_;
 
   /**
    * Work thread this will be the ingest of all the information is being consumed.
@@ -47,7 +46,7 @@ class Consumer {
     work_thread_ = std::thread(&Consumer::consume, this);
     return 0;
   }
-  int stop(){
+  virtual int stop(){
     is_consuming_ = false;
     work_thread_.join();
     return 0;

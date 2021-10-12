@@ -34,7 +34,7 @@ int main() {
     printf("\nSystem Info\n");
     printf("-----------\n");
     printf("OS Name: %s\n", uname_info.sysname);
-    printf("Node Name: %s\n", uname_info.sysname);
+    printf("Node Name: %s\n", uname_info.nodename);
     printf("Realease: %s\n", uname_info.release);
     printf("Version: %s\n", uname_info.version);
     printf("Machine Name: %s\n", uname_info.machine);

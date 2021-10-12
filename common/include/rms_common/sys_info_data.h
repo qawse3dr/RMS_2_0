@@ -14,6 +14,7 @@
 
 
 #include <vector>
+#include <cstring>
 
 #include "rms_common/common_data.h"
 
@@ -26,10 +27,10 @@ enum class Architecture {
   kX86,
   kArm,
   KArm64,
-
+  kUnknown,
 };
 
-struct CpuInfo{
+struct CpuInfo {
   std::uint8_t cpu_cores_;
   std::uint16_t cache_size_;
   Architecture arch_;
@@ -37,6 +38,7 @@ struct CpuInfo{
 
 
 struct StorageInfo {
+
   char dev_[12];
   char fs_type_[8];
   std::uint64_t free_;
@@ -44,14 +46,24 @@ struct StorageInfo {
 };
 
 struct NetworkInfo {
-
+  char interface_name_[16];
+  bool is_ipv6_;
+  union {
+    std::uint64_t ip; 
+    std::uint32_t ipv6[4];
+  };
 };
 
 struct TemperatureInfo {
-
+  char name[16];
+  char path[16];
 };
 
 struct SystemInfo {
+
+  // Uptime
+  long uptime_;
+  
   //System names
   char system_name_[32];
   char host_name_[32];

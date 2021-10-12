@@ -23,8 +23,11 @@ enum class RequestTypes {
 
   // System Info
   kSysInfo = 300,
+  kSysUptime,
   kSysStorage,
   kSysTemps,
+  kSysName,
+  kSysHostName,
 
   // Network Info
   kNetworkAdaptors = 400,
@@ -53,10 +56,13 @@ struct RequestData {
     struct CpuUsageData cpu_usage_data;
     struct StorageInfo storage_info;
     struct NetworkInfo network_info;
+    struct TemperatureInfo temp_info;
 
     // Muti-use Types
     struct VersionData version;
     char str_[32];
+    long long_;
+
   };
 };
 
