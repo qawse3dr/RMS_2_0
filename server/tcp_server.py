@@ -58,8 +58,73 @@ def printRequestData(req):
     print("Is Swap: %s" % (req.data.ram_data.is_swap_))
     print("Usage: %ldKb/%ldKb" % (req.data.ram_data.free_, req.data.ram_data.total_))
     print("----------------------")
-  
-
+  elif ( req.type == 200):
+    print("Cpu Usage")
+    print("----------------------")
+    print("Core Number: %hd" % (req.data.cpu_usage_data.core_num_))
+    print("Usage: %f%%" % (req.data.cpu_usage_data.usage_))
+    print("----------------------")
+  elif ( req.type == 201):
+    print("Cpu Info")
+    print("----------------------")
+    print("CPU core count: %hd" % (req.data.cpu_info.cpu_cores_))
+    print("Cpu Cache Size: %ldKb" % (req.data.cpu_info.cache_size_))
+    print("Architecture: %d" % (req.data.cpu_info.arch_))
+    print("----------------------")
+  elif ( req.type == 202):
+    print("Cpu Vendor Name")
+    print("----------------------")
+    print("CPU Vendor: %s" % (str(req.data.str_)))
+    print("----------------------")
+  elif ( req.type == 203):
+    print("Cpu Name")
+    print("----------------------")
+    print("CPU Name: %s" % (str(req.data.str_)))
+    print("----------------------")
+  elif ( req.type == 301):
+    print("Sys Uptime")
+    print("----------------------")
+    print("Sys Uptime: %d" % (req.data.long_))
+    print("----------------------")
+  elif ( req.type == 302):
+    print("Storage")
+    print("----------------------")
+    print("Dev : %s" % (req.data.storage_info.dev_))
+    print("fs_type : %s" % (req.data.storage_info.fs_type_))
+    print("Usage: %ldKb/%ldKb" % (req.data.storage_info.free_, req.data.storage_info.total_))
+    print("----------------------")
+  elif ( req.type == 304):
+    print("Sys name")
+    print("----------------------")
+    print("Name : %s" % (req.data.str_))
+    print("----------------------")
+  elif ( req.type == 305):
+    print("host name")
+    print("----------------------")
+    print("Name : %s" % (req.data.str_))
+    print("----------------------")
+  elif ( req.type == 400):
+    print("Network Interface")
+    print("----------------------")
+    print("Name : %s" % (req.data.network_info))
+    if (req.data.network_info.is_ipv6_):  
+      ip = "ipv6 currently not supported"
+      #ip = socket.inet_ntop(socket.AF_INET6, req.data.network_info.ipv6)
+    else:
+      ip = "ip4 not currenly supported"
+      #ip = socket.inet_ntop(socket.AF_INET, req.data.network_info.ip)
+    print("IP: %s" % (ip))
+    print("----------------------")
+  elif ( req.type == 500):
+    print("Os Version")
+    print("----------------------")
+    print("OS version: (%d,%d,%d)" % (req.data.version.major, req.data.version.minor, req.data.version.release))
+    print("----------------------")
+  elif ( req.type == 501):
+    print("reporter Version")
+    print("----------------------")
+    print("OS version: (%d,%d,%d)" % (req.data.version.major, req.data.version.minor, req.data.version.release))
+    print("----------------------")
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(("0.0.0.0", 1234))
@@ -88,8 +153,8 @@ try:
         data = client.recv(ctypes.sizeof(RequestData))
         requestData = RequestData.from_buffer_copy(data)
         printRequestData(requestData)
-except:
-  pass
+except Exception as e:
+  print(e)
 
 client.close()
 

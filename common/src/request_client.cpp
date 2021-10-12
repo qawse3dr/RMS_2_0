@@ -163,7 +163,6 @@ int RequestClient::sendTcpRequest(const Request& req) {
   }
 
   int data_sent = send(tcp_sockfd_, data, data_size, 0);
-  std::cout << "Data sent: " << data_sent << std::endl;
   return 0;
 }
 

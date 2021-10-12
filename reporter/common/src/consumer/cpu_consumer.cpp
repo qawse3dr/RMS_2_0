@@ -70,7 +70,7 @@ void CpuConsumer::consume() {
     }
 
     // Send request
-    common::request_client_.sendRequest(common::RequestProtocol::kLOG,
+    common::request_client_.sendRequest(common::RequestProtocol::kTCP,
                                         std::move(req));
 
     // Copies over data to old usage

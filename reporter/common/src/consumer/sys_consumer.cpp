@@ -24,7 +24,7 @@ void SysConsumer::consume() {
 
     auto req = common::SysInfoToRequest(usage[0]);
     // Send request
-    common::request_client_.sendRequest(common::RequestProtocol::kLOG,
+    common::request_client_.sendRequest(common::RequestProtocol::kTCP,
                                         std::move(req));
 
     // checks to make sure
