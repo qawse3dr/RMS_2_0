@@ -1,27 +1,27 @@
 #include "common/consumer/ram_consumer.h"
 
-#include <iostream>
 #include <unistd.h>
 
-#include "rms_common/util.h"
+#include <iostream>
+
 #include "rms_common/request_client.h"
+#include "rms_common/util.h"
 
 namespace rms {
 namespace reporter {
 
-RamConsumer::RamConsumer() : Consumer(std::make_unique<RamReporter>()) {};
+RamConsumer::RamConsumer() : Consumer(std::make_unique<RamReporter>()){};
 
 void RamConsumer::consume() {
-  while(is_consuming_) {
-    auto usage = reporter_->report() ;
-    
+  while (is_consuming_) {
+    auto usage = reporter_->report();
+
     common::Request req;
     rms::common::RequestData ram_usage, swap_usage;
 
-    //Set Header
+    // Set Header
     req.header.data_count = usage.size();
     req.header.timestamp = common::getTimestamp();
-
 
     // Set Data
     ram_usage.type = swap_usage.type = common::RequestTypes::kRamUsage;
@@ -29,20 +29,19 @@ void RamConsumer::consume() {
     req.data.emplace_back(std::move(ram_usage));
 
     // Only place swap if given
-    if(usage.size() == 2) {
+    if (usage.size() == 2) {
       swap_usage.ram_data = {true, usage[1].total_, usage[1].free_};
       req.data.emplace_back(std::move(swap_usage));
     }
 
     // Send request
-    common::request_client_.sendRequest(common::RequestProtocol::kLOG, std::move(req));
+    common::request_client_.sendRequest(common::RequestProtocol::kTCP,
+                                        std::move(req));
 
-    //TODO make config maybe this should be grabbed from the server
+    // TODO make config maybe this should be grabbed from the server
     sleep(1);
-
   }
 }
 
-
-} // namespace reporter
-} // namespace rms
+}  // namespace reporter
+}  // namespace rms
