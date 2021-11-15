@@ -25,11 +25,8 @@ class RequestClient {
 
   std::queue<std::tuple<RequestProtocol, Request>> request_queue_;
 
-  // Tcp Request vars
-  bool tcp_setup_;
-  int tcp_sockfd_;
-  int tcp_opt_;
-  struct sockaddr_in tcp_address_;
+// Tcp Request vars
+#include "rms_common/platform/request_client_vars.h"
 
   int sendHttpRequest(const Request& req);
   int sendTcpRequest(const Request& req);

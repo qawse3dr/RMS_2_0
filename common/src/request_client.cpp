@@ -1,7 +1,5 @@
 #include "rms_common/request_client.h"
 
-#include <arpa/inet.h>
-
 #include <cstring>
 #include <iostream>
 #include <tuple>
@@ -34,135 +32,11 @@ int RequestClient::sendLogRequest(const Request& req) {
   std::cout << "Incoming Request: " << req.header.timestamp << std::endl;
   std::cout << "---------------------------------------------" << std::endl;
 
-  char IP_name[INET6_ADDRSTRLEN];
-  struct in6_addr ipv6_addr;
-  struct in_addr ip_addr;
-
   for (int i = 0; i < req.header.data_count; i++) {
-    std::cout << "Data unit: " << i << std::endl;
-    switch (req.data[i].type) {
-      case RequestTypes::kRamUsage:
-        std::cout << "Is Swap: " << req.data[i].ram_data.is_swap_ << std::endl;
-        std::cout << "Usage: "
-                  << req.data[i].ram_data.total_ - req.data[i].ram_data.free_
-                  << "/" << req.data[i].ram_data.total_ << std::endl
-                  << std::endl;
-        break;
-      case RequestTypes::kCpuUsage:
-        std::cout << "Core Num: " << req.data[i].cpu_usage_data.core_num_
-                  << std::endl;
-        std::cout << "Usage: " << req.data[i].cpu_usage_data.usage_ << "%"
-                  << std::endl;
-        break;
-      case RequestTypes::kCpuVendorName:
-        std::cout << "Vendor Name: " << req.data[i].str_ << std::endl;
-        break;
-      case RequestTypes::kCpuName:
-        std::cout << "CPU Name: " << req.data[i].str_ << std::endl;
-        break;
-      case RequestTypes::kCpuInfo:
-        std::cout << "Cpu Core Count: "
-                  << static_cast<int>(req.data[i].cpu_info.cpu_cores_)
-                  << std::endl;
-        std::cout << "CPU arch: "
-                  << static_cast<int>(req.data[i].cpu_info.arch_) << std::endl;
-        std::cout << "CPU cache: " << req.data[i].cpu_info.cache_size_
-                  << std::endl;
-        break;
-      case RequestTypes::kSysUptime:
-        std::cout << "Sys Uptime: " << req.data[i].long_ << std::endl;
-        break;
-      case RequestTypes::kSysName:
-        std::cout << "Sys Name: " << req.data[i].str_ << std::endl;
-        break;
-      case RequestTypes::kSysHostName:
-        std::cout << "Sys HostName: " << req.data[i].str_ << std::endl;
-        break;
-      case RequestTypes::kSysOsVersion:
-        std::cout << "Sys OS version: "
-                  << static_cast<int>(req.data[i].version.major) << "."
-                  << static_cast<int>(req.data[i].version.minor) << "."
-                  << static_cast<int>(req.data[i].version.release) << std::endl;
-        break;
-      case RequestTypes::kSysClientVersion:
-        std::cout << "Sys Client version: "
-                  << static_cast<int>(req.data[i].version.major) << "."
-                  << static_cast<int>(req.data[i].version.minor) << "."
-                  << static_cast<int>(req.data[i].version.release) << std::endl;
-        break;
-      case RequestTypes::kSysStorage:
-        std::cout << "Storage Device: " << req.data[i].storage_info.dev_
-                  << " | " << req.data[i].storage_info.fs_type_ << std::endl;
-        std::cout << "Storage Space: " << req.data[i].storage_info.free_ << "/"
-                  << req.data[i].storage_info.total_ << std::endl;
-        break;
-      case RequestTypes::kNetworkAdaptors:
-        std::cout << "Network Adaptor: "
-                  << req.data[i].network_info.interface_name_ << std::endl;
-        if (req.data[i].network_info.is_ipv6_) {
-          ipv6_addr.__in6_u.__u6_addr32[0] = req.data[i].network_info.ipv6[0];
-          ipv6_addr.__in6_u.__u6_addr32[1] = req.data[i].network_info.ipv6[1];
-          ipv6_addr.__in6_u.__u6_addr32[2] = req.data[i].network_info.ipv6[2];
-          ipv6_addr.__in6_u.__u6_addr32[3] = req.data[i].network_info.ipv6[3];
-          inet_ntop(AF_INET6, &ipv6_addr, IP_name, INET6_ADDRSTRLEN);
-        } else {
-          ip_addr.s_addr = req.data[i].network_info.ip;
-          inet_ntop(AF_INET, &ip_addr, IP_name, INET6_ADDRSTRLEN);
-        }
-        std::cout << "IP: " << IP_name << std::endl;
-        break;
-      case RequestTypes::kSysTemps:
-        break;
-      default:
-        std::cout << "Not impl " << static_cast<int>(req.data[i].type)
-                  << std::endl;
-    }
-    std::cout << std::endl;
+    printRequestData(req.data[i]);
   }
   std::cout << "---------------------------------------------" << std::endl;
   logger_mutex.unlock();
-  return 0;
-}
-
-int RequestClient::sendTcpRequest(const Request& req) {
-  if (!tcp_setup_) {
-    if ((tcp_sockfd_ = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-      perror("socket failed to init");
-      exit(EXIT_FAILURE);
-    }
-
-    tcp_address_.sin_family = AF_INET;
-    tcp_address_.sin_port = htons(1234);
-
-    if (inet_pton(AF_INET, "127.0.0.1", &tcp_address_.sin_addr) < 0) {
-      perror("Invalid addr");
-      exit(EXIT_FAILURE);
-    }
-
-    if (connect(tcp_sockfd_, (struct sockaddr*)&tcp_address_,
-                sizeof(tcp_address_)) < 0) {
-      perror("connect failure");
-      exit(EXIT_FAILURE);
-    }
-    tcp_setup_ = true;
-  }
-
-  size_t data_size = sizeof(struct RequestHeader) +
-                     sizeof(struct RequestData) * req.header.data_count;
-  unsigned char data[data_size];
-
-  // Copy Header
-  memcpy(data, &req.header, sizeof(struct RequestHeader));
-
-  unsigned char* data_ptr = data + sizeof(struct RequestHeader);
-  for (int i = 0; i < req.header.data_count; i++) {
-    // Copy Data
-    memcpy(data_ptr, &(req.data[i]), sizeof(struct RequestData));
-
-    data_ptr += sizeof(struct RequestData);
-  }
-
-  int data_sent = send(tcp_sockfd_, data, data_size, 0);
   return 0;
 }
 
@@ -205,8 +79,10 @@ void RequestClient::pollRequests() {
     } else {  // Failed to send add back the value to the counter and print
               // error message
       std::cerr << "Warning:: Failed to send Request" << std::endl;
+      std::this_thread::sleep_for(std::chrono::seconds(10));
       request_counter_.release();
     }
+    // Dont release till after wait to stop queue from filling up
     rw_semaphore_.release();
   }
 }
