@@ -7,5 +7,4 @@ set(CMAKE_CXX_STANDARD 20)
 # TODO add choice for which platform to build
 add_subdirectory(common)
 add_subdirectory(reporter)
-
-
+add_subdirectory(server)
