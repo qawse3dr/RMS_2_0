@@ -12,6 +12,8 @@
 
 #include <string.h>
 #include <arpa/inet.h>
+#include <iostream>
+#include <memory>
 
 #include "rms_common/request_data.h"
 
@@ -20,20 +22,28 @@ namespace server {
 
 void ClientHandler::acceptThreads(int connection_fd) {
   rms::common::Request req;
-  while(1) {
+  while(running_) {
     // Reads header
-    read(connection_fd, &req.header, sizeof(rms::common::RequestHeader));
+    if (read(connection_fd, &req.header, sizeof(rms::common::RequestHeader)) == 0) {
+      std::cerr << "Connection Dropped" << std::endl;
+      break;
+    }
 
     rms::common::RequestData buffer[req.header.data_count];
-    read(connection_fd, &buffer, sizeof(rms::common::RequestData)*req.header.data_count);
+    if (read(connection_fd, &buffer, sizeof(rms::common::RequestData)*req.header.data_count) == 0) {
+      std::cerr << "Connection Dropped" << std::endl;
+      break;
+    }
     for ( int i = 0; i < req.header.data_count; i++) {
       req.data.emplace_back(std::move(buffer[i]));
     }
     ingestor_->ingestData(req);
   }
+  // After chatting close the socket
+  close(connection_fd);
 }
 
-ClientHandler::ClientHandler(std::unique_ptr<RequestIngestor>&& ingestor): ingestor_(std::move(ingestor)) {
+ClientHandler::ClientHandler(const std::shared_ptr<RequestIngestor>& ingestor): ingestor_(ingestor) {
 
 }
 
@@ -99,6 +109,7 @@ void ClientHandler::startListener(int port) {
 }
 
 void ClientHandler::shutdown() {
+  running_ = false;
   for ( std::thread& t : threads_) {
     t.join();
   }

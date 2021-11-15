@@ -12,6 +12,7 @@
 #include <atomic>
 #include <thread>
 #include <vector>
+#include <memory>
 
 #include "server/request_ingestor.h"
 
@@ -26,12 +27,12 @@ class ClientHandler {
   std::vector<std::thread> threads_;
   std::atomic_bool running_;
 
-  std::unique_ptr<RequestIngestor> ingestor_;
+  std::shared_ptr<RequestIngestor> ingestor_;
 
   void acceptThreads(int connection_fd);
 
  public:
-  ClientHandler(std::unique_ptr<RequestIngestor>&& ingestor);
+  ClientHandler(const std::shared_ptr<RequestIngestor>& ingestor);
 
   void startListener(int port);
 
