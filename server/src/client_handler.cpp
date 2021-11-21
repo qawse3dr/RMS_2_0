@@ -24,8 +24,8 @@ namespace rms {
 namespace server {
 
 void ClientHandler::acceptThreads(int connection_fd) {
-  rms::common::Request req;
   while (running_) {
+    rms::common::Request req;
     // Reads header
     if (read(connection_fd, &req.header, sizeof(rms::common::RequestHeader)) ==
         0) {
@@ -48,9 +48,9 @@ void ClientHandler::acceptThreads(int connection_fd) {
     header.data_count = 0;
     write(connection_fd, &header, sizeof(rms::common::ResponseHeader));
 
-    
+
     // TODO add to request queue it shouldn't be blocking
-    ingestor_->ingestData(req);
+    ingestor_->queueRequest(std::move(req));
   }
   // After chatting close the socket
   close(connection_fd);
@@ -67,6 +67,8 @@ void ClientHandler::startListener(int port) {
   socklen_t len;
   struct sockaddr_in servaddr, cli;
 
+  // Start ingestor
+  ingestor_->start();
   // socket create and verification
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -120,6 +122,7 @@ void ClientHandler::shutdown() {
   for (std::thread& t : threads_) {
     t.join();
   }
+  ingestor_->stop();
 }
 
 }  // namespace server

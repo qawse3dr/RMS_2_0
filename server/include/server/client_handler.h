@@ -13,6 +13,7 @@
 #include <memory>
 #include <thread>
 #include <vector>
+#include <queue>
 
 #include "server/request_ingestor.h"
 

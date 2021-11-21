@@ -1,21 +1,19 @@
 #include <iostream>
+#include <csignal>
 
 #include "common/rms_reporter_client.h"
 #include "rms_common/request_client.h"
-
-// TODO delete
-#include <chrono>
-#include <csignal>
-#include <thread>
-
 #include "rms_common/request_client.h"
 #include "rms_common/request_data.h"
+
+
 
 static rms::reporter::RmsReporterClient client;
 
 static void sigint_handler(int sig) {
-  client.stop();
+  printf("RMS 2.0 shutting down\n");
   rms::common::request_client_.stop();
+  client.stop();
   exit(0);
 }
 
