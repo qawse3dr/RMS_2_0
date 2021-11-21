@@ -54,7 +54,7 @@ void RequestClient::sendRequest(const RequestProtocol& type, Request&& req) {
 
 void RequestClient::pollRequests() {
   bool failed = false;
-  while (true) {
+  while (poll_requests_.load()) {
     request_counter_.acquire();
 
     if (poll_requests_.load() == false) break;
@@ -72,7 +72,7 @@ void RequestClient::pollRequests() {
         failed = sendLogRequest(std::get<GET_REQUEST_VALUE>(req));
         break;
     }
-    // TODO: check for failure to send later and if it fails dont pop and
+
     // release request_exists semaphore.
     if (!failed) {
       request_queue_.pop();

@@ -17,7 +17,6 @@
 namespace rms {
 namespace reporter {
 
-// TODO: change to be dynamic
 CpuReporter::CpuReporter(int cpu_core_count) {
   stats.cpu_core_usage_ = std::shared_ptr<CpuUsageStats::usage[]>(
       new CpuUsageStats::usage[cpu_core_count]);

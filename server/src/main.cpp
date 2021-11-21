@@ -1,17 +1,15 @@
-#include "server/client_handler.h"
-#include "server/request_log_ingestor.h"
-
-// TODO delete
-#include <chrono>
 #include <csignal>
 #include <iostream>
 #include <memory>
-#include <thread>
+
+#include "server/client_handler.h"
+#include "server/request_log_ingestor.h"
 
 static std::unique_ptr<rms::server::ClientHandler> client_handler;
 static std::shared_ptr<rms::server::LogRequestIngestor> log_ingestor;
 
 static void sigint_handler(int sig) {
+  printf("RMS 2.0 shutting down\n");
   client_handler->shutdown();
   exit(0);
 }
