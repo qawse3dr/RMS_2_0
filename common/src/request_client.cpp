@@ -103,6 +103,10 @@ void RequestClient::stop() {
   }
 }
 
+void RequestClient::join() {
+  work_thread_.join();
+}
+
 struct Request SysInfoToRequest(const struct SystemInfo& sys_info) {
   struct Request req;
   req.header.timestamp = getTimestamp();

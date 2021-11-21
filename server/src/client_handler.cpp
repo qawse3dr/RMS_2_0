@@ -10,83 +10,93 @@
  */
 #include "server/client_handler.h"
 
-#include <string.h>
 #include <arpa/inet.h>
+#include <string.h>
+
 #include <iostream>
 #include <memory>
 
 #include "rms_common/request_data.h"
+#include "rms_common/response_data.h"
+#include "rms_common/util.h"
 
 namespace rms {
 namespace server {
 
 void ClientHandler::acceptThreads(int connection_fd) {
   rms::common::Request req;
-  while(running_) {
+  while (running_) {
     // Reads header
-    if (read(connection_fd, &req.header, sizeof(rms::common::RequestHeader)) == 0) {
+    if (read(connection_fd, &req.header, sizeof(rms::common::RequestHeader)) ==
+        0) {
       std::cerr << "Connection Dropped" << std::endl;
       break;
     }
 
     rms::common::RequestData buffer[req.header.data_count];
-    if (read(connection_fd, &buffer, sizeof(rms::common::RequestData)*req.header.data_count) == 0) {
+    if (read(connection_fd, &buffer,
+             sizeof(rms::common::RequestData) * req.header.data_count) == 0) {
       std::cerr << "Connection Dropped" << std::endl;
       break;
     }
-    for ( int i = 0; i < req.header.data_count; i++) {
+    for (int i = 0; i < req.header.data_count; i++) {
       req.data.emplace_back(std::move(buffer[i]));
     }
+
+    struct rms::common::ResponseHeader header;
+    header.timestamp = rms::common::getTimestamp();
+    header.data_count = 0;
+    write(connection_fd, &header, sizeof(rms::common::ResponseHeader));
+
+    
+    // TODO add to request queue it shouldn't be blocking
     ingestor_->ingestData(req);
   }
   // After chatting close the socket
   close(connection_fd);
 }
 
-ClientHandler::ClientHandler(const std::shared_ptr<RequestIngestor>& ingestor): ingestor_(ingestor) {
+ClientHandler::ClientHandler(const std::shared_ptr<RequestIngestor>& ingestor)
+    : ingestor_(ingestor) {}
 
-}
-
-// taken from https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
+// taken from
+// https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
 void ClientHandler::startListener(int port) {
   running_ = true;
   int sockfd, connfd;
   socklen_t len;
   struct sockaddr_in servaddr, cli;
-  
+
   // socket create and verification
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
   if (sockfd == -1) {
-      printf("socket creation failed...\n");
-      exit(0);
-  }
-  else
-      printf("Socket successfully created..\n");
+    printf("socket creation failed...\n");
+    exit(0);
+  } else
+    printf("Socket successfully created..\n");
   memset(&servaddr, 0, sizeof(servaddr));
-  
+
   // assign IP, PORT
   servaddr.sin_family = AF_INET;
   servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
   servaddr.sin_port = htons(port);
-  
+
   // Binding newly created socket to given IP and verification
   if ((bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr))) != 0) {
-      printf("socket bind failed...\n");
-  }
-  else
-      printf("Socket successfully binded..\n");
-  
-  while(running_) {
+    printf("socket bind failed...\n");
+  } else
+    printf("Socket successfully binded..\n");
+
+  while (running_) {
     printf("Start listening\n");
 
     // Now server is ready to listen and verification
     if ((listen(sockfd, 5)) != 0) {
-        printf("Listen failed...\n");
-        continue;
-    }
-    else
-        printf("Server listening..\n");
+      printf("Listen failed...\n");
+      continue;
+    } else
+      printf("Server listening..\n");
 
     // Accept the data packet from client and verification
     len = static_cast<socklen_t>(sizeof(cli));
@@ -97,20 +107,17 @@ void ClientHandler::startListener(int port) {
     } else {
       printf("Accept worked...\n");
     }
-    threads_.emplace_back(std::thread(&ClientHandler::acceptThreads, this, connfd));
-
+    threads_.emplace_back(
+        std::thread(&ClientHandler::acceptThreads, this, connfd));
   }
-  
-  
-  
-  
+
   // After chatting close the socket
   close(sockfd);
 }
 
 void ClientHandler::shutdown() {
   running_ = false;
-  for ( std::thread& t : threads_) {
+  for (std::thread& t : threads_) {
     t.join();
   }
 }

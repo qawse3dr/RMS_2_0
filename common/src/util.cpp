@@ -23,7 +23,8 @@ void printRequestData(const RequestData& data) {
                 << std::endl;
       break;
     case RequestTypes::kCpuUsage:
-      std::cout << "Core Num: " << static_cast<int>(data.cpu_usage_data.core_num_) << std::endl;
+      std::cout << "Core Num: "
+                << static_cast<int>(data.cpu_usage_data.core_num_) << std::endl;
       std::cout << "Usage: " << data.cpu_usage_data.usage_ << "%" << std::endl;
       break;
     case RequestTypes::kCpuVendorName:
