@@ -9,6 +9,15 @@
 namespace rms {
 namespace reporter {
 
+
+class IConsumer {
+ public:
+
+  virtual int start() = 0;
+  virtual int join() = 0;
+  virtual int stop() = 0;
+};
+
 /**
  * A consummer should have 4 main methods
  * parent class methods:
@@ -21,7 +30,7 @@ namespace reporter {
  *             stamp.
  */
 template <class R>
-class Consumer {
+class Consumer : public IConsumer{
  protected:
   std::unique_ptr<R> reporter_;
   bool is_consuming_ = false;
@@ -49,6 +58,11 @@ class Consumer {
   }
   virtual int stop() {
     is_consuming_ = false;
+    work_thread_.join();
+    return 0;
+  }
+
+  int join() {
     work_thread_.join();
     return 0;
   }

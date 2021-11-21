@@ -23,7 +23,9 @@ void RequestIngestor::ingestData(const rms::common::Request& req) {
   }
 }
 
-const RequestIngestorType RequestIngestor::getRequestIngestorType() { return ingestorType_; }
+const RequestIngestorType RequestIngestor::getRequestIngestorType() {
+  return ingestorType_;
+}
 
 }  // namespace server
 }  // namespace rms

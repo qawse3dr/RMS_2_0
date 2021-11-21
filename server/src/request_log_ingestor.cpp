@@ -16,17 +16,19 @@
 namespace rms {
 namespace server {
 
-LogRequestIngestor::LogRequestIngestor() : RequestIngestor(RequestIngestorType::KlogIngestor) {}
+LogRequestIngestor::LogRequestIngestor()
+    : RequestIngestor(RequestIngestorType::KlogIngestor) {}
 
-void LogRequestIngestor::ingestRequestHeader(const rms::common::RequestHeader& header) {
-
-  std::cout << "Gets Header: " << header.data_count << "at: " << header.timestamp << std::endl;;
+void LogRequestIngestor::ingestRequestHeader(
+    const rms::common::RequestHeader& header) {
+  std::cout << "Gets Header: " << header.data_count
+            << "at: " << header.timestamp << std::endl;
+  ;
 }
 
-void LogRequestIngestor::ingestRequestData(const rms::common::RequestData& data) {
-
+void LogRequestIngestor::ingestRequestData(
+    const rms::common::RequestData& data) {
   rms::common::printRequestData(data);
-
 }
 }  // namespace server
 }  // namespace rms

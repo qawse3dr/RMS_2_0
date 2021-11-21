@@ -10,9 +10,9 @@
  */
 
 #include <atomic>
+#include <memory>
 #include <thread>
 #include <vector>
-#include <memory>
 
 #include "server/request_ingestor.h"
 

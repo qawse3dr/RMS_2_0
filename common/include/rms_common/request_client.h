@@ -9,6 +9,7 @@
 #include <thread>
 
 #include "rms_common/request_data.h"
+#include "rms_common/response_data.h"
 
 namespace rms {
 namespace common {
@@ -31,6 +32,7 @@ class RequestClient {
   int sendHttpRequest(const Request& req);
   int sendTcpRequest(const Request& req);
   int sendLogRequest(const Request& req);
+  int handleResponseData(const ResponseData& res_data, int tcp_fd);
 
   void pollRequests();
 
@@ -38,8 +40,8 @@ class RequestClient {
   RequestClient();
 
   void sendRequest(const RequestProtocol& type, Request&& req);
-
   void start();
+  void join();
   void stop();
 };
 

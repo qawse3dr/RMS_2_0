@@ -9,6 +9,7 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 #include "rms_common/request_client.h"
+#include "rms_common/response_data.h"
 
 #include <arpa/inet.h>
 #include <signal.h>
@@ -63,15 +64,49 @@ int RequestClient::sendTcpRequest(const Request& req) {
 
   int data_sent = send(tcp_sockfd_, data, data_size, 0);
 
-  // Add back old handler
-  signal(SIGPIPE, old_hander);
-
   // Connection closed
   if (data_sent == -1) {
     perror("Send failied");
     close(tcp_sockfd_);
     tcp_setup_ = false;
     return -1;
+  }
+  // Wait for response todo add error handling
+  struct ResponseHeader res_header;
+  data_sent = read(tcp_sockfd_, &res_header, sizeof(ResponseHeader));
+
+  // Connection closed
+  if (data_sent == -1) {
+    perror("read failied");
+    close(tcp_sockfd_);
+    tcp_setup_ = false;
+    return -1;
+  }
+  
+  printf("Get res at %ld with %d response data\n", res_header.timestamp, res_header.data_count);
+  if(res_header.data_count > 0) {
+    ResponseData buffer[res_header.data_count];
+    read(tcp_sockfd_, &buffer, sizeof(ResponseData)* (res_header.data_count));
+    for (int i = 0; i < res_header.data_count; i++) {
+      if(handleResponseData(buffer[i], tcp_sockfd_)) {
+        std::cerr << "Failed to handle response disgarding res of response data as it might not work correctly now" << std::endl;
+        break;
+      }
+    }
+  }
+  // Add back old handler
+  signal(SIGPIPE, old_hander);
+
+  
+  return 0;
+}
+
+// Concerts the reponse data into a job and adds it to the job queue
+int RequestClient::handleResponseData(const ResponseData& res_data, int tcp_fd) {
+  switch(res_data.type) {
+    case ResponseTypes::kSendSystemInfo:
+      std::cout << "Sending sysInfo" << std::endl;
+      break;
   }
   return 0;
 }

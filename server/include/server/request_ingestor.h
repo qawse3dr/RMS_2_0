@@ -37,7 +37,8 @@ class RequestIngestor {
   // These function will be impl by the child class for what to do with the
   // req data and req header
  protected:
-  virtual void ingestRequestHeader(const rms::common::RequestHeader& header) = 0;
+  virtual void ingestRequestHeader(
+      const rms::common::RequestHeader& header) = 0;
   virtual void ingestRequestData(const common::RequestData& data) = 0;
 
  public:
