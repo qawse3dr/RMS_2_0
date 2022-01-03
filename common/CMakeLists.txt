@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 set(SRC_FILES
     "src/request_client.cpp"
     "src/util.cpp"
+    "src/rms_database.cpp"
   )
 
 IF (WIN32)

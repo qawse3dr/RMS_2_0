@@ -26,18 +26,39 @@ namespace server {
 class ClientHandler {
  private:
   std::vector<std::thread> threads_;
+  std::thread accept_clients_thread_;
   std::atomic_bool running_;
+  
+  // server tcp fd
+  int sock_fd_;
 
   std::shared_ptr<RequestIngestor> ingestor_;
 
-  void acceptThreads(int connection_fd);
+  // client info
+  
+  /**
+   * Accepts new conenctions from client
+   * taking in a new connection starting a new thread with that
+   * tcp_fd with ClientHandler::clientReader.
+   */
+  void acceptClients();
+
+  /**
+   * Reads the data and does any work needed for the client
+   */
+  void clientReader(int connection_fd);
 
  public:
   ClientHandler(const std::shared_ptr<RequestIngestor>& ingestor);
 
+  /**
+   * Starts listening for new conenctions on passed port.
+   */
   void startListener(int port);
 
-  void shutdown();
+  void stopListening();
+
+  void wait();
 };
 
 }  // namespace server

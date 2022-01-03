@@ -4,20 +4,21 @@
 
 #include "server/client_handler.h"
 #include "server/request_log_ingestor.h"
+#include "server/rms_terminal.h"
 
-static std::unique_ptr<rms::server::ClientHandler> client_handler;
+std::unique_ptr<rms::server::ClientHandler> client_handler;
 static std::shared_ptr<rms::server::LogRequestIngestor> log_ingestor;
 
-static void sigint_handler(int sig) {
+void rms_exit_handler(int sig) {
   printf("RMS 2.0 shutting down\n");
-  client_handler->shutdown();
+  client_handler->stopListening();
   exit(0);
 }
 
 int main() {
-  std::cout << "Welcome to RMS 2.0" << std::endl;
+  std::cout << "Welcome to RMS (Remote Management System) 2.0" << std::endl;
 
-  signal(SIGINT, sigint_handler);
+  signal(SIGINT, rms_exit_handler);
 
   log_ingestor = std::make_shared<rms::server::LogRequestIngestor>();
   client_handler =
@@ -25,5 +26,11 @@ int main() {
 
   client_handler->startListener(8080);
 
+  // Only start rms_terminal if it is run in a terminal
+  if(isatty(0)) {
+    rms::server::rmsTerminal();
+  } else {
+    client_handler->wait();
+  }
   return 0;
 }
