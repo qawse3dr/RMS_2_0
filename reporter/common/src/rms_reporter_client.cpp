@@ -35,18 +35,21 @@ int RmsReporterClient::start() {
   for (auto& consumer : consumers_) {
     consumer->start();
   }
+  return 0;
 }
 
 int RmsReporterClient::stop() {
   for (auto& consumer : consumers_) {
     consumer->stop();
   }
+  return 0;
 }
 
 int RmsReporterClient::join() {
   for (auto& consumer : consumers_) {
     consumer->join();
   }
+  return 0;
 }
 
 }  // namespace common

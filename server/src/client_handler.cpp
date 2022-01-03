@@ -11,6 +11,7 @@
 #include "server/client_handler.h"
 
 #include <arpa/inet.h>
+#include <linux/socket.h>
 #include <string.h>
 
 #include <iostream>
@@ -23,20 +24,42 @@
 namespace rms {
 namespace server {
 
-void ClientHandler::acceptThreads(int connection_fd) {
+void ClientHandler::acceptClients() {
+
+  socklen_t len;
+  struct sockaddr_in servaddr, cli;
+  int connfd;
+
+  while (running_) {
+    // Now server is ready to listen and verification
+    if ((listen(sock_fd_, 5)) != 0)
+      continue;
+    // Accept the data packet from client and verification
+    len = static_cast<socklen_t>(sizeof(cli));
+    connfd = accept(sock_fd_, (struct sockaddr*)&cli, &len);
+    if (connfd < 0)
+      continue;
+
+    threads_.emplace_back(
+        std::thread(&ClientHandler::clientReader, this, connfd));
+  }
+
+}
+
+void ClientHandler::clientReader(int connection_fd) {
   while (running_) {
     rms::common::Request req;
     // Reads header
     if (read(connection_fd, &req.header, sizeof(rms::common::RequestHeader)) ==
         0) {
-      std::cerr << "Connection Dropped" << std::endl;
+      std::cerr << "\nConnection Dropped" << std::endl;
       break;
     }
 
     rms::common::RequestData buffer[req.header.data_count];
     if (read(connection_fd, &buffer,
              sizeof(rms::common::RequestData) * req.header.data_count) == 0) {
-      std::cerr << "Connection Dropped" << std::endl;
+      std::cerr << "\nConnection Dropped" << std::endl;
       break;
     }
     for (int i = 0; i < req.header.data_count; i++) {
@@ -48,8 +71,8 @@ void ClientHandler::acceptThreads(int connection_fd) {
     header.data_count = 0;
     write(connection_fd, &header, sizeof(rms::common::ResponseHeader));
 
-
-    // TODO add to request queue it shouldn't be blocking
+    // Add the request to the queue so that it doesn't block future requests
+    // and can be dealt with later  
     ingestor_->queueRequest(std::move(req));
   }
   // After chatting close the socket
@@ -63,16 +86,14 @@ ClientHandler::ClientHandler(const std::shared_ptr<RequestIngestor>& ingestor)
 // https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
 void ClientHandler::startListener(int port) {
   running_ = true;
-  int sockfd, connfd;
-  socklen_t len;
-  struct sockaddr_in servaddr, cli;
+  struct sockaddr_in servaddr;
 
   // Start ingestor
   ingestor_->start();
   // socket create and verification
-  sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
 
-  if (sockfd == -1) {
+  if (sock_fd_ == -1) {
     printf("socket creation failed...\n");
     exit(0);
   } else
@@ -85,44 +106,31 @@ void ClientHandler::startListener(int port) {
   servaddr.sin_port = htons(port);
 
   // Binding newly created socket to given IP and verification
-  if ((bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr))) != 0) {
+  if ((bind(sock_fd_, (struct sockaddr*)&servaddr, sizeof(servaddr))) != 0) {
     printf("socket bind failed...\n");
   } else
     printf("Socket successfully binded..\n");
 
-  while (running_) {
-    printf("Start listening\n");
-
-    // Now server is ready to listen and verification
-    if ((listen(sockfd, 5)) != 0) {
-      printf("Listen failed...\n");
-      continue;
-    } else
-      printf("Server listening..\n");
-
-    // Accept the data packet from client and verification
-    len = static_cast<socklen_t>(sizeof(cli));
-    connfd = accept(sockfd, (struct sockaddr*)&cli, &len);
-    if (connfd < 0) {
-      printf("Accept failed...\n");
-      continue;
-    } else {
-      printf("Accept worked...\n");
-    }
-    threads_.emplace_back(
-        std::thread(&ClientHandler::acceptThreads, this, connfd));
-  }
-
-  // After chatting close the socket
-  close(sockfd);
+  // Start thread to listen for now clients
+  accept_clients_thread_ = std::thread(&ClientHandler::acceptClients, this);
 }
 
-void ClientHandler::shutdown() {
+void ClientHandler::stopListening() {
   running_ = false;
+  // Shuts down work thread
+  shutdown(sock_fd_,SHUT_RD);
+  
+  //close(sock_fd_); // close server fd
+  accept_clients_thread_.join();
+  // Shuts down children threads
   for (std::thread& t : threads_) {
     t.join();
   }
   ingestor_->stop();
+}
+
+void ClientHandler::wait() {
+  accept_clients_thread_.join();
 }
 
 }  // namespace server

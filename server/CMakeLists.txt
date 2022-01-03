@@ -10,6 +10,9 @@ set(SRC_FILES
 
   # Handler
   "src/client_handler.cpp"
+
+  # RMS_TERMINAL
+  "src/rms_terminal.cpp"
   )
 
 add_executable(rms_server ${SRC_FILES})

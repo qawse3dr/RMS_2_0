@@ -76,7 +76,7 @@ int RequestClient::sendTcpRequest(const Request& req) {
   data_sent = read(tcp_sockfd_, &res_header, sizeof(ResponseHeader));
 
   // Connection closed
-  if (data_sent == -1) {
+  if (data_sent == 0) {
     perror("read failied");
     close(tcp_sockfd_);
     tcp_setup_ = false;
