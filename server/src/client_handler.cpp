@@ -25,25 +25,21 @@ namespace rms {
 namespace server {
 
 void ClientHandler::acceptClients() {
-
   socklen_t len;
   struct sockaddr_in servaddr, cli;
   int connfd;
 
   while (running_) {
     // Now server is ready to listen and verification
-    if ((listen(sock_fd_, 5)) != 0)
-      continue;
+    if ((listen(sock_fd_, 5)) != 0) continue;
     // Accept the data packet from client and verification
     len = static_cast<socklen_t>(sizeof(cli));
     connfd = accept(sock_fd_, (struct sockaddr*)&cli, &len);
-    if (connfd < 0)
-      continue;
+    if (connfd < 0) continue;
 
     threads_.emplace_back(
         std::thread(&ClientHandler::clientReader, this, connfd));
   }
-
 }
 
 void ClientHandler::clientReader(int connection_fd) {
@@ -72,7 +68,7 @@ void ClientHandler::clientReader(int connection_fd) {
     write(connection_fd, &header, sizeof(rms::common::ResponseHeader));
 
     // Add the request to the queue so that it doesn't block future requests
-    // and can be dealt with later  
+    // and can be dealt with later
     ingestor_->queueRequest(std::move(req));
   }
   // After chatting close the socket
@@ -118,9 +114,9 @@ void ClientHandler::startListener(int port) {
 void ClientHandler::stopListening() {
   running_ = false;
   // Shuts down work thread
-  shutdown(sock_fd_,SHUT_RD);
-  
-  //close(sock_fd_); // close server fd
+  shutdown(sock_fd_, SHUT_RD);
+
+  // close(sock_fd_); // close server fd
   accept_clients_thread_.join();
   // Shuts down children threads
   for (std::thread& t : threads_) {
@@ -129,9 +125,7 @@ void ClientHandler::stopListening() {
   ingestor_->stop();
 }
 
-void ClientHandler::wait() {
-  accept_clients_thread_.join();
-}
+void ClientHandler::wait() { accept_clients_thread_.join(); }
 
 }  // namespace server
 }  // namespace rms

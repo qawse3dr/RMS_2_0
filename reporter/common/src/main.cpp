@@ -1,12 +1,9 @@
-#include <iostream>
 #include <csignal>
+#include <iostream>
 
-#include "rms/reporter/common/rms_reporter_client.h"
-#include "rms/reporter/common/request_client.h"
-#include "rms/reporter/common/request_client.h"
 #include "rms/common/request_data.h"
-
-
+#include "rms/reporter/common/request_client.h"
+#include "rms/reporter/common/rms_reporter_client.h"
 
 static void sigint_handler(int sig) {
   printf("RMS 2.0 shutting down\n");
@@ -20,12 +17,11 @@ int main() {
 
   signal(SIGINT, sigint_handler);
 
-  
   // start request_client_
   rms::reporter::request_client_.start();
-    rms::reporter::RmsReporterClient::ReporterClient()->start();
+  rms::reporter::RmsReporterClient::ReporterClient()->start();
 
-    rms::reporter::RmsReporterClient::ReporterClient()->join();
-  
+  rms::reporter::RmsReporterClient::ReporterClient()->join();
+
   return 0;
 }

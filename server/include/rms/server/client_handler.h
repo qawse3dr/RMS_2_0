@@ -11,9 +11,9 @@
 
 #include <atomic>
 #include <memory>
+#include <queue>
 #include <thread>
 #include <vector>
-#include <queue>
 
 #include "rms/server/request_ingestor.h"
 
@@ -28,14 +28,14 @@ class ClientHandler {
   std::vector<std::thread> threads_;
   std::thread accept_clients_thread_;
   std::atomic_bool running_;
-  
+
   // server tcp fd
   int sock_fd_;
 
   std::shared_ptr<RequestIngestor> ingestor_;
 
   // client info
-  
+
   /**
    * Accepts new conenctions from client
    * taking in a new connection starting a new thread with that

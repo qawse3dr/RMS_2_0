@@ -105,9 +105,7 @@ void RequestClient::stop() {
   }
 }
 
-void RequestClient::join() {
-  work_thread_.join();
-}
+void RequestClient::join() { work_thread_.join(); }
 
-}  // namespace common
+}  // namespace reporter
 }  // namespace rms

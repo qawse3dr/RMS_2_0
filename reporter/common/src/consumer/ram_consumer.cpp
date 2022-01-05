@@ -4,8 +4,8 @@
 
 #include <iostream>
 
-#include "rms/reporter/common/request_client.h"
 #include "rms/common/util.h"
+#include "rms/reporter/common/request_client.h"
 
 namespace rms {
 namespace reporter {
@@ -35,8 +35,7 @@ void RamConsumer::consume() {
     }
 
     // Send request
-    request_client_.sendRequest(RequestProtocol::kTCP,
-                                        std::move(req));
+    request_client_.sendRequest(RequestProtocol::kTCP, std::move(req));
 
     // TODO make config maybe this should be grabbed from the server
     sleep(60);

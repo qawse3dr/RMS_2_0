@@ -11,9 +11,7 @@
 namespace rms {
 namespace common {
 
-
 struct Request SysInfoToRequest(const struct SystemInfo& sys_info) {
-
   struct Request req;
   req.header.timestamp = getTimestamp();
   req.header.data_count = 8 + sys_info.storage_info_.size() +
@@ -87,9 +85,21 @@ struct Request SysInfoToRequest(const struct SystemInfo& sys_info) {
   return req;
 }
 
-
+std::string archToString(const Architecture& arch) {
+  switch (arch) {
+    case Architecture::kX86_64:
+      return "X86_64";
+    case Architecture::kX86:
+      return "X86";
+    case Architecture::kArm:
+      return "Arm";
+    case Architecture::kArm64:
+      return "Arm64";
+    case Architecture::kUnknown:
+      return "Unknown";
+  }
+  return "Unknown";
+}
 
 }  // namespace common
 }  // namespace rms
-
-

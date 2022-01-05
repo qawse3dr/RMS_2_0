@@ -19,7 +19,7 @@ namespace reporter {
 RmsReporterClient* RmsReporterClient::reporter_client_ = nullptr;
 
 RmsReporterClient* RmsReporterClient::ReporterClient() {
-  if(!reporter_client_) reporter_client_ = new RmsReporterClient();
+  if (!reporter_client_) reporter_client_ = new RmsReporterClient();
   return reporter_client_;
 }
 
@@ -36,7 +36,6 @@ RmsReporterClient::RmsReporterClient() {
   auto sys_info = sys_reporter.report()[0];
 
   sys_consumer_ = std::make_unique<rms::reporter::SysConsumer>();
-
 
   consumers_.emplace_back(std::make_unique<rms::reporter::CpuConsumer>(
       static_cast<int>(sys_info.cpu_info_.cpu_cores_) * 2));
@@ -64,5 +63,5 @@ int RmsReporterClient::join() {
   return 0;
 }
 
-}  // namespace common
+}  // namespace reporter
 }  // namespace rms

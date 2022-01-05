@@ -13,6 +13,7 @@
 #define _RMS_COMMON_SYS_INFO_DATA_H_
 
 #include <cstring>
+#include <string>
 #include <vector>
 
 #include "rms/common/common_data.h"
@@ -24,7 +25,7 @@ enum class Architecture {
   kX86_64,
   kX86,
   kArm,
-  KArm64,
+  kArm64,
   kUnknown,
 };
 
@@ -83,6 +84,8 @@ struct Request;
 
 // Converts a SystemInfo Struct to a request
 struct Request SysInfoToRequest(const struct SystemInfo& sys_info);
+
+std::string archToString(const Architecture& arch);
 
 }  // namespace common
 }  // namespace rms

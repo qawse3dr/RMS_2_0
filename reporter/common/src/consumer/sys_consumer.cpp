@@ -11,8 +11,8 @@
 #include "rms/reporter/common/consumer/sys_consumer.h"
 
 #include "rms/common/sys_info_data.h"
-#include "rms/reporter/common/request_client.h"
 #include "rms/common/util.h"
+#include "rms/reporter/common/request_client.h"
 
 namespace rms {
 namespace reporter {
@@ -25,8 +25,7 @@ void SysConsumer::consume() {
 
     auto req = rms::common::SysInfoToRequest(usage[0]);
     // Send request
-    request_client_.sendRequest(RequestProtocol::kTCP,
-                                        std::move(req));
+    request_client_.sendRequest(RequestProtocol::kTCP, std::move(req));
 
     // checks to make sure
 

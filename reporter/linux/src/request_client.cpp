@@ -9,12 +9,13 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 #include "rms/reporter/common/request_client.h"
-#include "rms/common/response_data.h"
 
 #include <arpa/inet.h>
 #include <signal.h>
 
 #include <iostream>
+
+#include "rms/common/response_data.h"
 
 void sigPipeHander(int s) { std::cerr << "pipe Broke" << std::endl; }
 
@@ -82,14 +83,17 @@ int RequestClient::sendTcpRequest(const Request& req) {
     tcp_setup_ = false;
     return -1;
   }
-  
-  printf("Get res at %ld with %d response data\n", res_header.timestamp, res_header.data_count);
-  if(res_header.data_count > 0) {
+
+  printf("Get res at %ld with %d response data\n", res_header.timestamp,
+         res_header.data_count);
+  if (res_header.data_count > 0) {
     ResponseData buffer[res_header.data_count];
-    read(tcp_sockfd_, &buffer, sizeof(ResponseData)* (res_header.data_count));
+    read(tcp_sockfd_, &buffer, sizeof(ResponseData) * (res_header.data_count));
     for (int i = 0; i < res_header.data_count; i++) {
-      if(handleResponseData(buffer[i], tcp_sockfd_)) {
-        std::cerr << "Failed to handle response disgarding res of response data as it might not work correctly now" << std::endl;
+      if (handleResponseData(buffer[i], tcp_sockfd_)) {
+        std::cerr << "Failed to handle response disgarding res of response "
+                     "data as it might not work correctly now"
+                  << std::endl;
         break;
       }
     }
@@ -97,20 +101,20 @@ int RequestClient::sendTcpRequest(const Request& req) {
   // Add back old handler
   signal(SIGPIPE, old_hander);
 
-  
   return 0;
 }
 
 // Concerts the reponse data into a job and adds it to the job queue
-int RequestClient::handleResponseData(const ResponseData& res_data, int tcp_fd) {
-  switch(res_data.type) {
+int RequestClient::handleResponseData(const ResponseData& res_data,
+                                      int tcp_fd) {
+  switch (res_data.type) {
     case ResponseTypes::kSendSystemInfo:
       std::cout << "Sending sysInfo" << std::endl;
-      
+
       break;
   }
   return 0;
 }
 
-}  // namespace common
+}  // namespace reporter
 }  // namespace rms

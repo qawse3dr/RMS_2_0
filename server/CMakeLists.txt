@@ -16,6 +16,7 @@ set(SRC_FILES
 
   # Database
   "src/rms_database.cpp"
+  "src/rms_computer.cpp"
 
   )
 

@@ -12,8 +12,8 @@
 #ifndef _INCLUDE_PLATFORM_REPORTER_SYS_REPORTER_H_
 #define _INCLUDE_PLATFORM_REPORTER_SYS_REPORTER_H_
 
-#include "rms/reporter/common/reporter/reporter.h"
 #include "rms/common/sys_info_data.h"
+#include "rms/reporter/common/reporter/reporter.h"
 
 namespace rms {
 namespace reporter {

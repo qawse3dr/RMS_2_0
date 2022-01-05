@@ -12,8 +12,8 @@
 #ifndef _INCLUDE_SERVER_RMS_REPORTER_CLIENT_H_
 #define _INCLUDE_SERVER_RMS_REPORTER_CLIENT_H_
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "rms/reporter/common/consumer/consumer.h"
 #include "rms/reporter/common/consumer/sys_consumer.h"
@@ -22,15 +22,15 @@ namespace rms {
 namespace reporter {
 
 class RmsReporterClient {
-
  private:
   std::vector<std::unique_ptr<IConsumer>> consumers_;
   std::unique_ptr<SysConsumer> sys_consumer_;
-  //static std::unique_ptr<RmsReporterClient> reporter_client_;
+  // static std::unique_ptr<RmsReporterClient> reporter_client_;
   static RmsReporterClient* reporter_client_;
   // TODO Create Work Queue
 
   RmsReporterClient();
+
  public:
   static RmsReporterClient* ReporterClient();
   // Starts up the reporter application
@@ -45,6 +45,6 @@ class RmsReporterClient {
   static void free();
 };
 
-}  // namespace server
+}  // namespace reporter
 }  // namespace rms
 #endif  // _INCLUDE_SERVER_RMS_REPORTER_CLIENT_H_

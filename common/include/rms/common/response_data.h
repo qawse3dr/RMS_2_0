@@ -4,7 +4,6 @@
 
 #include <vector>
 
-
 namespace rms {
 namespace common {
 

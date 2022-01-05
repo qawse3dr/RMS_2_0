@@ -17,18 +17,13 @@ enum class RmsDatabaseTypes {
   kSqlite,
 };
 
-class RmsDatabase
-{
-private:
+class RmsDatabase {
+ private:
   RmsDatabaseTypes database_type_;
 
-public:
+ public:
   RmsDatabase(const RmsDatabaseTypes& type);
   ~RmsDatabase();
-
-  
 };
-
-
 
 #endif  // _INCLUDE_RMS_COMMON_RMS_DATABASE_H_

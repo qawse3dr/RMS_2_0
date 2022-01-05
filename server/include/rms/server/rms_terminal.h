@@ -11,9 +11,9 @@
 
 #include <atomic>
 #include <memory>
+#include <queue>
 #include <thread>
 #include <vector>
-#include <queue>
 
 #include "rms/server/request_ingestor.h"
 
@@ -24,8 +24,8 @@ namespace rms {
 namespace server {
 
 /* Simple terminal made for rms server config
- * Will do simple commands like print how many computers connected and info about them
- * as well as be able to send commands to the connected computers
+ * Will do simple commands like print how many computers connected and info
+ * about them as well as be able to send commands to the connected computers
  */
 int rmsTerminal();
 

@@ -27,7 +27,7 @@ int main() {
   client_handler->startListener(8080);
 
   // Only start rms_terminal if it is run in a terminal
-  if(isatty(0)) {
+  if (isatty(0)) {
     rms::server::rmsTerminal();
   } else {
     client_handler->wait();

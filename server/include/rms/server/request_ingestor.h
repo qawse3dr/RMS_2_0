@@ -9,13 +9,13 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
-#include "rms/common/request_data.h"
-
-#include <queue>
 #include <atomic>
-#include <semaphore>
 #include <mutex>
+#include <queue>
+#include <semaphore>
 #include <thread>
+
+#include "rms/common/request_data.h"
 
 #ifndef _INCLUDE_SERVER_INGESTOR_SERVER_H_
 #define _INCLUDE_SERVER_INGESTOR_SERVER_H_
@@ -39,7 +39,7 @@ enum class RequestIngestorType {
 class RequestIngestor {
  private:
   RequestIngestorType ingestorType_;
-  
+
   // Work queue
   std::queue<rms::common::Request> request_queue_;
   std::binary_semaphore request_queue_counter_;
@@ -64,7 +64,7 @@ class RequestIngestor {
   int start();
   int join();
   int stop();
-  
+
   // Gets the ingestor type this should not be changed anywhere
   // but in the constructor.
   const RequestIngestorType getRequestIngestorType();

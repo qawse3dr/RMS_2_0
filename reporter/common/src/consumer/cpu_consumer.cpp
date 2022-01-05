@@ -12,8 +12,8 @@
 
 #include <iostream>
 
-#include "rms/reporter/common/request_client.h"
 #include "rms/common/util.h"
+#include "rms/reporter/common/request_client.h"
 
 namespace rms {
 namespace reporter {
@@ -70,8 +70,7 @@ void CpuConsumer::consume() {
     }
 
     // Send request
-    request_client_.sendRequest(RequestProtocol::kTCP,
-                                        std::move(req));
+    request_client_.sendRequest(RequestProtocol::kTCP, std::move(req));
 
     // Copies over data to old usage
     copyCpuUsageStats(usage, old_stats);

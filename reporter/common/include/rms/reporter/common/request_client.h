@@ -48,7 +48,7 @@ class RequestClient {
 
 extern RequestClient request_client_;
 
-}  // namespace common
+}  // namespace reporter
 }  // namespace rms
 
 #endif  // _COMMON_INCLUDE_RMS_COMMON_HTTP_CLIENT_H_

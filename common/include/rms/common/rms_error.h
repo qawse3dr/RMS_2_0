@@ -12,25 +12,19 @@
 #ifndef _INCLUDE_RMS_COMMON_RMS_ERROR_H_
 #define _INCLUDE_RMS_COMMON_RMS_ERROR_H_
 
-
-#include <string> 
+#include <string>
 
 enum class RmsErrorCode {
   kSuccess,
   kUnkownError,
 };
 
-class RmsError
-{
-private:
-
-
-public:
+class RmsError {
+ private:
+ public:
   RmsError(RmsErrorCode code);
-  
+
   std::string toString();
 };
-
-
 
 #endif  // _INCLUDE_RMS_COMMON_RMS_DATABASE_H_

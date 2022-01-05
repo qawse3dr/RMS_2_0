@@ -4,13 +4,6 @@
 #include <iostream>
 #include <tuple>
 
-
-
 namespace rms {
-namespace server {
-
-
-
-
-}  // namespace server
+namespace server {}  // namespace server
 }  // namespace rms

@@ -9,10 +9,8 @@
 namespace rms {
 namespace reporter {
 
-
 class IConsumer {
  public:
-
   virtual int start() = 0;
   virtual int join() = 0;
   virtual int stop() = 0;
@@ -30,16 +28,16 @@ class IConsumer {
  *             stamp.
  */
 template <class R>
-class Consumer : public IConsumer{
+class Consumer : public IConsumer {
  protected:
   std::unique_ptr<R> reporter_;
   bool is_consuming_ = false;
   std::thread work_thread_;
 
-
   /**
    * the timeout of how often the consumer should consume.
-   * if it set to -1 it assumed that this is a trigger and should only consume when asked to
+   * if it set to -1 it assumed that this is a trigger and should only consume
+   * when asked to
    */
   int timeout_ = -1;
   /**

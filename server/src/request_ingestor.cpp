@@ -14,7 +14,7 @@ namespace rms {
 namespace server {
 
 RequestIngestor::RequestIngestor(RequestIngestorType type)
-    : ingestorType_(type), request_queue_counter_(0), running_(false){}
+    : ingestorType_(type), request_queue_counter_(0), running_(false) {}
 
 void RequestIngestor::queueRequest(rms::common::Request&& req) {
   request_queue_mutex_.lock();
@@ -25,7 +25,6 @@ void RequestIngestor::queueRequest(rms::common::Request&& req) {
 
 void RequestIngestor::processRequest() {
   while (running_.load()) {
-
     // Wait for incoming request
     request_queue_counter_.acquire();
     if (!running_.load()) break;
@@ -34,12 +33,11 @@ void RequestIngestor::processRequest() {
     auto request = request_queue_.front();
     request_queue_.pop();
     request_queue_mutex_.unlock();
-    
+
     // Ingest Request NOTE: dont release request_queue_counter_
     // that should be done by the queue ftn
     // Should be obvious but I made the mistake once so I might agains
     ingestRequest(request);
-
   }
 }
 
