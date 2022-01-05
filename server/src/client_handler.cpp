@@ -8,7 +8,7 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "server/client_handler.h"
+#include "rms/server/client_handler.h"
 
 #include <arpa/inet.h>
 #include <linux/socket.h>
@@ -17,9 +17,9 @@
 #include <iostream>
 #include <memory>
 
-#include "rms_common/request_data.h"
-#include "rms_common/response_data.h"
-#include "rms_common/util.h"
+#include "rms/common/request_data.h"
+#include "rms/common/response_data.h"
+#include "rms/common/util.h"
 
 namespace rms {
 namespace server {

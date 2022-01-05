@@ -8,15 +8,15 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "server/rms_terminal.h"
+#include "rms/server/rms_terminal.h"
 
 #include <iostream>
 #include <csignal>
 
-#include "server/client_handler.h"
-#include "server/request_log_ingestor.h"
-#include "server/rms_terminal.h"
-#include "rms_common/rms_version_info.h"
+#include "rms/server/client_handler.h"
+#include "rms/server/request_log_ingestor.h"
+#include "rms/server/rms_terminal.h"
+#include "rms/common/rms_version_info.h"
 // main 
 void rms_exit_handler(int sig);
 extern std::unique_ptr<rms::server::ClientHandler> client_handler;

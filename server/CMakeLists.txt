@@ -13,6 +13,10 @@ set(SRC_FILES
 
   # RMS_TERMINAL
   "src/rms_terminal.cpp"
+
+  # Database
+  "src/rms_database.cpp"
+
   )
 
 add_executable(rms_server ${SRC_FILES})

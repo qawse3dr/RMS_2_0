@@ -1,0 +1,16 @@
+FEATURES
+  - config (should be given from server on provision)
+  - init computer on first connect (gets config and gets computer ID from server)
+  - execute cmd on computer
+  - Create Database
+    - create tables
+  
+
+BUGS
+
+
+REFACTOR
+  - move reporter request_client from common to reporter
+  - Have a pool of consumers that get jobs given to it
+    having a thread per consumer could be wasting performance so a queue job might
+    be useful to decrease thread count without losing performance.

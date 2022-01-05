@@ -8,11 +8,11 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "server/request_log_ingestor.h"
+#include "rms/server/request_log_ingestor.h"
 
 #include <iostream>
 
-#include "rms_common/util.h"
+#include "rms/common/util.h"
 namespace rms {
 namespace server {
 

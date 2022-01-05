@@ -9,7 +9,7 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
-#include "platform/reporter/cpu_reporter.h"
+#include "rms/reporter/platform/reporter/cpu_reporter.h"
 
 #include <iostream>
 #include <memory>

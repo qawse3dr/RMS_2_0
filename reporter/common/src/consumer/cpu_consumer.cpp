@@ -8,12 +8,12 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "common/consumer/cpu_consumer.h"
+#include "rms/reporter/common/consumer/cpu_consumer.h"
 
 #include <iostream>
 
-#include "rms_common/request_client.h"
-#include "rms_common/util.h"
+#include "rms/reporter/common/request_client.h"
+#include "rms/common/util.h"
 
 namespace rms {
 namespace reporter {
@@ -70,14 +70,14 @@ void CpuConsumer::consume() {
     }
 
     // Send request
-    common::request_client_.sendRequest(common::RequestProtocol::kTCP,
+    request_client_.sendRequest(RequestProtocol::kTCP,
                                         std::move(req));
 
     // Copies over data to old usage
     copyCpuUsageStats(usage, old_stats);
 
     // TODO make config maybe this should be grabbed from the server
-    sleep(1);
+    sleep(60);
   }
 }
 

@@ -1,4 +1,4 @@
-#include "platform/reporter/ram_reporter.h"
+#include "rms/reporter/platform/reporter/ram_reporter.h"
 
 #include <iostream>
 

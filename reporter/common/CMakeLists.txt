@@ -12,7 +12,8 @@ set(SRC_FILES
     # RMS reporter client (this is our main class handing everything needed)
     "src/rms_reporter_client.cpp"
 
-
+    # Reporter
+    "src/request_client.cpp"
 
 )
 add_executable(rms ${SRC_FILES})

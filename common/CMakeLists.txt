@@ -1,17 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(SRC_FILES
-    "src/request_client.cpp"
     "src/util.cpp"
-    "src/rms_database.cpp"
+    "src/sys_info_data.cpp"
   )
 
-IF (WIN32)
-  # Add windows support here
-  set(PLATFORM_SRC_FILES )
-ELSE()
-  set(PLATFORM_SRC_FILES "linux/src/request_client.cpp")
-ENDIF()
+
 
 
 add_library(rms_common STATIC

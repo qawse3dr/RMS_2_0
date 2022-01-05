@@ -8,10 +8,11 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "common/consumer/sys_consumer.h"
+#include "rms/reporter/common/consumer/sys_consumer.h"
 
-#include "rms_common/request_client.h"
-#include "rms_common/util.h"
+#include "rms/common/sys_info_data.h"
+#include "rms/reporter/common/request_client.h"
+#include "rms/common/util.h"
 
 namespace rms {
 namespace reporter {
@@ -22,9 +23,9 @@ void SysConsumer::consume() {
   while (is_consuming_) {
     auto usage = reporter_->report();
 
-    auto req = common::SysInfoToRequest(usage[0]);
+    auto req = rms::common::SysInfoToRequest(usage[0]);
     // Send request
-    common::request_client_.sendRequest(common::RequestProtocol::kTCP,
+    request_client_.sendRequest(RequestProtocol::kTCP,
                                         std::move(req));
 
     // checks to make sure

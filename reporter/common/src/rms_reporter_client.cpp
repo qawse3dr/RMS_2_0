@@ -8,13 +8,25 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "common/rms_reporter_client.h"
+#include "rms/reporter/common/rms_reporter_client.h"
 
-#include "common/consumer/cpu_consumer.h"
-#include "common/consumer/ram_consumer.h"
+#include "rms/reporter/common/consumer/cpu_consumer.h"
+#include "rms/reporter/common/consumer/ram_consumer.h"
 
 namespace rms {
 namespace reporter {
+
+RmsReporterClient* RmsReporterClient::reporter_client_ = nullptr;
+
+RmsReporterClient* RmsReporterClient::ReporterClient() {
+  if(!reporter_client_) reporter_client_ = new RmsReporterClient();
+  return reporter_client_;
+}
+
+void RmsReporterClient::free() {
+  delete reporter_client_;
+  reporter_client_ = nullptr;
+}
 
 RmsReporterClient::RmsReporterClient() {
   // Read from config to find all consumers

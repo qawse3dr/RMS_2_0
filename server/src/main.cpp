@@ -2,9 +2,9 @@
 #include <iostream>
 #include <memory>
 
-#include "server/client_handler.h"
-#include "server/request_log_ingestor.h"
-#include "server/rms_terminal.h"
+#include "rms/server/client_handler.h"
+#include "rms/server/request_log_ingestor.h"
+#include "rms/server/rms_terminal.h"
 
 std::unique_ptr<rms::server::ClientHandler> client_handler;
 static std::shared_ptr<rms::server::LogRequestIngestor> log_ingestor;
