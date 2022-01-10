@@ -7,12 +7,19 @@ set(SRC_FILES
   # Ingestors
   "src/request_ingestor.cpp"
   "src/request_log_ingestor.cpp"
+  "src/request_db_ingestor.cpp"
+
 
   # Handler
   "src/client_handler.cpp"
 
   # RMS_TERMINAL
   "src/rms_terminal.cpp"
+
+  # Database
+  "src/rms_database.cpp"
+  "src/rms_computer.cpp"
+
   )
 
 add_executable(rms_server ${SRC_FILES})

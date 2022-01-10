@@ -9,7 +9,7 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
-#include "platform/reporter/sys_reporter.h"
+#include "rms/reporter/platform/reporter/sys_reporter.h"
 
 #include <arpa/inet.h>
 #include <ifaddrs.h>

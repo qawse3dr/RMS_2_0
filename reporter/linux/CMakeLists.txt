@@ -4,9 +4,8 @@ set(SRC_FILES
     "src/reporter/ram_reporter.cpp"
     "src/reporter/cpu_reporter.cpp"
     "src/reporter/sys_reporter.cpp"
-
-
-    "isTrue.cpp")
+    "src/request_client.cpp"
+    )
 
 add_library(rms_platform STATIC
     ${SRC_FILES}

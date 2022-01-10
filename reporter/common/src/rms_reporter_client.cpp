@@ -8,13 +8,25 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "common/rms_reporter_client.h"
+#include "rms/reporter/common/rms_reporter_client.h"
 
-#include "common/consumer/cpu_consumer.h"
-#include "common/consumer/ram_consumer.h"
+#include "rms/reporter/common/consumer/cpu_consumer.h"
+#include "rms/reporter/common/consumer/ram_consumer.h"
 
 namespace rms {
 namespace reporter {
+
+RmsReporterClient* RmsReporterClient::reporter_client_ = nullptr;
+
+RmsReporterClient* RmsReporterClient::ReporterClient() {
+  if (!reporter_client_) reporter_client_ = new RmsReporterClient();
+  return reporter_client_;
+}
+
+void RmsReporterClient::free() {
+  delete reporter_client_;
+  reporter_client_ = nullptr;
+}
 
 RmsReporterClient::RmsReporterClient() {
   // Read from config to find all consumers
@@ -24,7 +36,6 @@ RmsReporterClient::RmsReporterClient() {
   auto sys_info = sys_reporter.report()[0];
 
   sys_consumer_ = std::make_unique<rms::reporter::SysConsumer>();
-
 
   consumers_.emplace_back(std::make_unique<rms::reporter::CpuConsumer>(
       static_cast<int>(sys_info.cpu_info_.cpu_cores_) * 2));
@@ -52,5 +63,9 @@ int RmsReporterClient::join() {
   return 0;
 }
 
-}  // namespace common
+void RmsReporterClient::triggerSysConsumer() {
+  sys_consumer_->triggerConsume();
+}
+
+}  // namespace reporter
 }  // namespace rms
