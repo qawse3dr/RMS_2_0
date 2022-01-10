@@ -38,6 +38,10 @@ enum class RequestTypes {
   kSysClientVersion,
   kSysServerVersion,
 
+  // Control packages
+  kHandshakeStart = 600,  // long
+  kHandshakeEnd,          // empty
+
   kUnknown = 1000,
 };
 

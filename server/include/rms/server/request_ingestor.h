@@ -9,13 +9,11 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
-#include <atomic>
-#include <mutex>
-#include <queue>
-#include <semaphore>
-#include <thread>
+#include <memory>
 
 #include "rms/common/request_data.h"
+#include "rms/common/response_data.h"
+#include "rms/server/rms_computer.h"
 
 #ifndef _INCLUDE_SERVER_INGESTOR_SERVER_H_
 #define _INCLUDE_SERVER_INGESTOR_SERVER_H_
@@ -40,30 +38,22 @@ class RequestIngestor {
  private:
   RequestIngestorType ingestorType_;
 
-  // Work queue
-  std::queue<rms::common::Request> request_queue_;
-  std::binary_semaphore request_queue_counter_;
-  std::mutex request_queue_mutex_;
-  std::atomic_bool running_;
-  std::thread work_thread_;
-
   // These function will be impl by the child class for what to do with the
   // req data and req header
  protected:
   virtual void ingestRequestHeader(
       const rms::common::RequestHeader& header) = 0;
-  virtual void ingestRequestData(const common::RequestData& data) = 0;
+  virtual void ingestRequestData(const common::RequestData& data,
+                                 common::Response&,
+                                 std::shared_ptr<RmsComputer>&) = 0;
 
  public:
   RequestIngestor(RequestIngestorType type);
 
-  void ingestRequest(const rms::common::Request& req);
+  void ingestRequest(const rms::common::Request& req, int fd,
+                     std::shared_ptr<RmsComputer>&);
   void queueRequest(rms::common::Request&& req);
   void processRequest();
-
-  int start();
-  int join();
-  int stop();
 
   // Gets the ingestor type this should not be changed anywhere
   // but in the constructor.

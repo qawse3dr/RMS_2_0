@@ -12,6 +12,7 @@
 
 #include <iostream>
 
+#include "rms/common/rms_config.h"
 #include "rms/common/util.h"
 #include "rms/reporter/common/request_client.h"
 
@@ -19,7 +20,10 @@ namespace rms {
 namespace reporter {
 
 CpuConsumer::CpuConsumer(int cpu_count)
-    : Consumer(std::make_unique<CpuReporter>(cpu_count)) {}
+    : Consumer(std::make_unique<CpuReporter>(cpu_count)) {
+  timeout_ =
+      std::stol(rms::common::RmsConfig::find(RMS_REPORTER_CONFIG_TIMEOUT));
+}
 
 // Preformace a deep copy on cpu Usage stats
 static void copyCpuUsageStats(const CpuUsageStats& src, CpuUsageStats& dst) {
@@ -76,7 +80,7 @@ void CpuConsumer::consume() {
     copyCpuUsageStats(usage, old_stats);
 
     // TODO make config maybe this should be grabbed from the server
-    sleep(60);
+    sleep(timeout_);
   }
 }
 

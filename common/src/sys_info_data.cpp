@@ -1,3 +1,14 @@
+/*
+ * (C) Copyright 2021 Larry Milne (https://www.larrycloud.ca)
+ *
+ * This code is distributed on "AS IS" BASIS,
+ * WITHOUT WARRANTINES OR CONDITIONS OF ANY KIND.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author: qawse3dr a.k.a Larry Milne
+ */
+
 #include "rms/common/sys_info_data.h"
 
 #include <cstring>
@@ -11,12 +22,11 @@
 namespace rms {
 namespace common {
 
-struct Request SysInfoToRequest(const struct SystemInfo& sys_info) {
-  struct Request req;
+void SysInfoToRequest(const struct SystemInfo& sys_info, struct Request& req) {
   req.header.timestamp = getTimestamp();
-  req.header.data_count = 8 + sys_info.storage_info_.size() +
-                          sys_info.network_info_.size() +
-                          sys_info.temp_info_.size();
+  req.header.data_count += 8 + sys_info.storage_info_.size() +
+                           sys_info.network_info_.size() +
+                           sys_info.temp_info_.size();
 
   RequestData data;
 
@@ -81,7 +91,12 @@ struct Request SysInfoToRequest(const struct SystemInfo& sys_info) {
     data.type = RequestTypes::kSysTemps;
     req.data.push_back(data);
   }
+}
 
+struct Request SysInfoToRequest(const struct SystemInfo& sys_info) {
+  struct Request req;
+  req.header.data_count = 0;
+  SysInfoToRequest(sys_info, req);
   return req;
 }
 

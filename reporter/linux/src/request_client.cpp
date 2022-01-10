@@ -16,33 +16,57 @@
 #include <iostream>
 
 #include "rms/common/response_data.h"
+#include "rms/common/rms_config.h"
+#include "rms/reporter/common/rms_reporter_client.h"
 
 void sigPipeHander(int s) { std::cerr << "pipe Broke" << std::endl; }
 
 namespace rms {
 namespace reporter {
 
+int RequestClient::setupTCP() {
+  if ((tcp_sockfd_ = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+    perror("socket failed to init");
+    exit(EXIT_FAILURE);
+  }
+
+  tcp_address_.sin_family = AF_INET;
+  std::string port =
+      rms::common::RmsConfig::find(RMS_REPORTER_CONFIG_SERVER_PORT);
+  if (port.empty()) {
+    std::cerr << "Error:: server PORT not set in confing" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  tcp_address_.sin_port = htons(std::stol(port));
+
+  std::string IP = rms::common::RmsConfig::find(RMS_REPORTER_CONFIG_SERVER_IP);
+  if (IP.empty()) {
+    std::cerr << "Error:: server IP not set in confing" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  if (inet_pton(AF_INET, IP.c_str(), &tcp_address_.sin_addr) < 0) {
+    perror("Invalid address");
+    exit(EXIT_FAILURE);
+  }
+
+  if (connect(tcp_sockfd_, (struct sockaddr*)&tcp_address_,
+              sizeof(tcp_address_)) < 0) {
+    perror("Couldn't connect to server");
+    sleep(1);
+    return -1;
+  }
+  // setup worked
+  tcp_setup_ = true;
+  return 0;
+}
+
 int RequestClient::sendTcpRequest(const Request& req) {
   if (!tcp_setup_) {
-    if ((tcp_sockfd_ = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-      perror("socket failed to init");
-      exit(EXIT_FAILURE);
-    }
-
-    tcp_address_.sin_family = AF_INET;
-    tcp_address_.sin_port = htons(8080);
-
-    if (inet_pton(AF_INET, "127.0.0.1", &tcp_address_.sin_addr) < 0) {
-      perror("Invalid address");
-      exit(EXIT_FAILURE);
-    }
-
-    if (connect(tcp_sockfd_, (struct sockaddr*)&tcp_address_,
-                sizeof(tcp_address_)) < 0) {
-      perror("Failed to connect trying again in 10 seconds");
+    if (setupTCP()) {
+      tcp_setup_ = false;
       return -1;
     }
-    tcp_setup_ = true;
   }
 
   size_t data_size = sizeof(struct RequestHeader) +
@@ -110,8 +134,21 @@ int RequestClient::handleResponseData(const ResponseData& res_data,
   switch (res_data.type) {
     case ResponseTypes::kSendSystemInfo:
       std::cout << "Sending sysInfo" << std::endl;
-
+      RmsReporterClient::ReporterClient()->triggerSysConsumer();
       break;
+    case ResponseTypes::kHandShake: {
+      std::cout << "Handshake Complete" << std::endl;
+      long computer_id =
+          std::stol(RmsConfig::find(RMS_REPORTER_CONFIG_COMPUTER_ID));
+      if (computer_id != res_data.long_) {
+        RmsConfig::replace(RMS_REPORTER_CONFIG_COMPUTER_ID,
+                           std::to_string(res_data.long_));
+        RmsConfig::save();
+      }
+    } break;
+    default:
+      std::cout << "un implemented ResponseType:: "
+                << static_cast<int>(res_data.type) << std::endl;
   }
   return 0;
 }

@@ -19,22 +19,37 @@ RmsComputer::RmsComputer(const int computer_id) : computer_id_(computer_id) {
 }
 
 // Setters
-void RmsComputer::setSysName(const char* name) { system_name_ = name; }
-void RmsComputer::setHostName(const char* name) { host_name_ = name; }
+void RmsComputer::setSysName(const char* name) {
+  system_name_ = name;
+  if (transaction) transaction_computer_changed = true;
+}
+void RmsComputer::setHostName(const char* name) {
+  host_name_ = name;
+  if (transaction) transaction_computer_changed = true;
+}
 
 void RmsComputer::setOSVersion(const rms::common::VersionData& ver) {
   os_version_ = ver;
+  if (transaction) transaction_computer_changed = true;
 }
 void RmsComputer::setClientVersion(const rms::common::VersionData& ver) {
   client_version_ = ver;
+  if (transaction) transaction_computer_changed = true;
 }
 
-void RmsComputer::setCpuName(const char* name) { cpu_name_ = name; }
-void RmsComputer::setCpuVendor(const char* name) { cpu_vendor_ = name; }
+void RmsComputer::setCpuName(const char* name) {
+  cpu_name_ = name;
+  if (transaction) transaction_computer_changed = true;
+}
+void RmsComputer::setCpuVendor(const char* name) {
+  cpu_vendor_ = name;
+  if (transaction) transaction_computer_changed = true;
+}
 
 void RmsComputer::setCpuInfo(const rms::common::CpuInfo& cpu) {
   cpu_core_count_ = cpu.cpu_cores_;
   cpu_cache_size_ = cpu.cache_size_;
+  if (transaction) transaction_computer_changed = true;
 }
 
 /**
@@ -49,13 +64,20 @@ static void StorageInfoToRmsStorageInfo(
   rms_storage_info.total_ = storage_info.total_;
   rms_storage_info.connected_ = true;
 }
+
 void RmsComputer::addStorageDevice(const rms::common::StorageInfo& dev) {
   // Check if the storage Device exists if it does update it and return
   for (auto& storage : storage_info_) {
     if (storage.dev_path_ == dev.dev_) {  // Found existing device
       if (computer_id_ != -1)
         ;  // Update DB
-      StorageInfoToRmsStorageInfo(storage, dev);
+      if (transaction) {
+        RmsStorageInfo info;
+        StorageInfoToRmsStorageInfo(info, dev);
+        transaction_storage_info_.emplace_back(std::move(info));
+      } else {
+        StorageInfoToRmsStorageInfo(storage, dev);
+      }
       return;
     }
   }
@@ -64,10 +86,10 @@ void RmsComputer::addStorageDevice(const rms::common::StorageInfo& dev) {
   RmsStorageInfo info;
   StorageInfoToRmsStorageInfo(info, dev);
 
-  storage_info_.emplace_back(std::move(info));
-  if (computer_id_ != -1) {
-    // Add it to db
-  }
+  if (transaction)
+    transaction_storage_info_.emplace_back(std::move(info));
+  else
+    storage_info_.emplace_back(std::move(info));
 }
 
 static void NetworkDeviceToRmsNetworkDevice(

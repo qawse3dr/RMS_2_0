@@ -4,13 +4,17 @@
 
 #include <iostream>
 
+#include "rms/common/rms_config.h"
 #include "rms/common/util.h"
 #include "rms/reporter/common/request_client.h"
 
 namespace rms {
 namespace reporter {
 
-RamConsumer::RamConsumer() : Consumer(std::make_unique<RamReporter>()){};
+RamConsumer::RamConsumer() : Consumer(std::make_unique<RamReporter>()) {
+  timeout_ =
+      std::stol(rms::common::RmsConfig::find(RMS_REPORTER_CONFIG_TIMEOUT));
+};
 
 void RamConsumer::consume() {
   while (is_consuming_) {
@@ -38,7 +42,7 @@ void RamConsumer::consume() {
     request_client_.sendRequest(RequestProtocol::kTCP, std::move(req));
 
     // TODO make config maybe this should be grabbed from the server
-    sleep(60);
+    sleep(timeout_);
   }
 }
 

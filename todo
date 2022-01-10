@@ -1,13 +1,10 @@
 FEATURES
-  - config (should be given from server on provision)
-  - init computer on first connect (gets config and gets computer ID from server)
   - execute cmd on computer
   - Create Database
     - create tables
   - Create Logger or a one maybe as a separate project so i can reuse it for other cpp projects  
 
 BUGS
-
 
 REFACTOR
   - move reporter request_client from common to reporter

@@ -15,6 +15,7 @@
 #include <memory>
 #include <vector>
 
+#include "rms/common/request_data.h"
 #include "rms/reporter/common/consumer/consumer.h"
 #include "rms/reporter/common/consumer/sys_consumer.h"
 
@@ -25,8 +26,8 @@ class RmsReporterClient {
  private:
   std::vector<std::unique_ptr<IConsumer>> consumers_;
   std::unique_ptr<SysConsumer> sys_consumer_;
-  // static std::unique_ptr<RmsReporterClient> reporter_client_;
   static RmsReporterClient* reporter_client_;
+
   // TODO Create Work Queue
 
   RmsReporterClient();
@@ -41,6 +42,8 @@ class RmsReporterClient {
 
   // Waits for all the threads to join
   int join();
+
+  void triggerSysConsumer();
 
   static void free();
 };

@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 
 #include <atomic>
+#include <functional>
 #include <queue>
 #include <semaphore>
 #include <thread>
@@ -33,14 +34,44 @@ class RequestClient {
   int sendHttpRequest(const Request& req);
   int sendTcpRequest(const Request& req);
   int sendLogRequest(const Request& req);
+
+  /**
+   * handles the response data from the server. ie
+   * if the server requests something add it to the work queue
+   * and deal with it later.
+   *
+   **/
   int handleResponseData(const ResponseData& res_data, int tcp_fd);
 
+  // Work thread.
   void pollRequests();
+  /*
+   * Setup the TCP connection with the config and calls handshake to finish the
+   * the setup for the client
+   */
+  int setupTCP();
+
+  /**
+   * Hand shakes with the server either giving the computer_id from the config
+   * or asking for a new one if it hasn't been generated yet.
+   * if config doesn't contain the computer_id it will also send sys_info data
+   * so the computer has a base line
+   * it it does have computer_id it will still send sys_info_data but to see if
+   * anyting has changed about the setup ie (hdd was added or one was taken
+   * out).
+   */
+  int handshakeTCP();
 
  public:
   RequestClient();
 
+  /**
+   * Sends a request with a given protocal currently only kLog and kTCP are
+   *supported if need be http might be added in the future
+   **/
   void sendRequest(const RequestProtocol& type, Request&& req);
+
+  // Controls request_client
   void start();
   void join();
   void stop();

@@ -84,6 +84,7 @@ struct Request;
 
 // Converts a SystemInfo Struct to a request
 struct Request SysInfoToRequest(const struct SystemInfo& sys_info);
+void SysInfoToRequest(const struct SystemInfo& sys_info, struct Request&);
 
 std::string archToString(const Architecture& arch);
 

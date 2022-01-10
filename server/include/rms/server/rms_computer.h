@@ -69,9 +69,15 @@ class RmsComputer {
   std::vector<RmsStorageInfo> storage_info_;
   std::vector<RmsNetworkInfo> network_info_;
 
+  // transaction
+  bool transaction = false;
+  bool transaction_computer_changed = false;
+  std::vector<RmsStorageInfo> transaction_storage_info_;
+  std::vector<RmsNetworkInfo> transaction_network_info_;
+
  public:
-  /** create a blank computer i.e provision it on the database side and set the
-   * id*/
+  /** create a blank computer i.e provision it on the database side and set
+   * the id*/
   RmsComputer();
 
   /** computer exists use computer_id to fetch the data*/
@@ -91,6 +97,13 @@ class RmsComputer {
 
   void addStorageDevice(const rms::common::StorageInfo& dev);
   void addNetworkDevice(const rms::common::NetworkInfo& dev);
+
+  inline int getComputerId() { return computer_id_; }
+
+  inline void startTransaction() { transaction = true; };
+
+  // Ends the transaction and pushes it to the db
+  void endTransaction();
 
   /**
    * Adds the computer to the db if it hasn't been provisioned yet

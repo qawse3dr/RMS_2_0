@@ -63,5 +63,9 @@ int RmsReporterClient::join() {
   return 0;
 }
 
+void RmsReporterClient::triggerSysConsumer() {
+  sys_consumer_->triggerConsume();
+}
+
 }  // namespace reporter
 }  // namespace rms

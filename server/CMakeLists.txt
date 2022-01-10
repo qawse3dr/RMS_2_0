@@ -7,6 +7,8 @@ set(SRC_FILES
   # Ingestors
   "src/request_ingestor.cpp"
   "src/request_log_ingestor.cpp"
+  "src/request_db_ingestor.cpp"
+
 
   # Handler
   "src/client_handler.cpp"

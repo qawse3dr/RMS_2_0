@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 set(SRC_FILES
     "src/util.cpp"
     "src/sys_info_data.cpp"
+    "src/rms_config.cpp"
   )
 
 

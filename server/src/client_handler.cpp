@@ -18,8 +18,6 @@
 #include <memory>
 
 #include "rms/common/request_data.h"
-#include "rms/common/response_data.h"
-#include "rms/common/util.h"
 
 namespace rms {
 namespace server {
@@ -43,6 +41,8 @@ void ClientHandler::acceptClients() {
 }
 
 void ClientHandler::clientReader(int connection_fd) {
+  std::shared_ptr<RmsComputer> computer;
+
   while (running_) {
     rms::common::Request req;
     // Reads header
@@ -62,14 +62,12 @@ void ClientHandler::clientReader(int connection_fd) {
       req.data.emplace_back(std::move(buffer[i]));
     }
 
-    struct rms::common::ResponseHeader header;
-    header.timestamp = rms::common::getTimestamp();
-    header.data_count = 0;
-    write(connection_fd, &header, sizeof(rms::common::ResponseHeader));
+    ingestor_->ingestRequest(req, connection_fd,
+                             computer);  // this should be serial
 
     // Add the request to the queue so that it doesn't block future requests
     // and can be dealt with later
-    ingestor_->queueRequest(std::move(req));
+    // ingestor_->queueRequest(std::move(req));
   }
   // After chatting close the socket
   close(connection_fd);
@@ -84,8 +82,6 @@ void ClientHandler::startListener(int port) {
   running_ = true;
   struct sockaddr_in servaddr;
 
-  // Start ingestor
-  ingestor_->start();
   // socket create and verification
   sock_fd_ = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -122,7 +118,6 @@ void ClientHandler::stopListening() {
   for (std::thread& t : threads_) {
     t.join();
   }
-  ingestor_->stop();
 }
 
 void ClientHandler::wait() { accept_clients_thread_.join(); }

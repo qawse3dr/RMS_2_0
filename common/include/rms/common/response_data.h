@@ -11,6 +11,7 @@ enum class ResponseTypes {
   kSendSystemInfo,
   kRunCommand,
   kRunScript,
+  kHandShake
 };
 
 struct ResponseHeader {
@@ -20,11 +21,14 @@ struct ResponseHeader {
 
 struct ResponseData {
   ResponseTypes type;
+  union {
+    long long_;
+  };
 };
 
 struct Response {
   struct ResponseHeader header;
-  std::vector<struct ReponseData> data;
+  std::vector<struct ResponseData> data;
 };
 
 }  // namespace common

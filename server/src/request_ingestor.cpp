@@ -10,62 +10,40 @@
  */
 #include "rms/server/request_ingestor.h"
 
+#include "rms/common/util.h"
+
 namespace rms {
 namespace server {
 
 RequestIngestor::RequestIngestor(RequestIngestorType type)
-    : ingestorType_(type), request_queue_counter_(0), running_(false) {}
+    : ingestorType_(type) {}
 
-void RequestIngestor::queueRequest(rms::common::Request&& req) {
-  request_queue_mutex_.lock();
-  request_queue_.emplace(std::move(req));
-  request_queue_counter_.release();
-  request_queue_mutex_.unlock();
-}
-
-void RequestIngestor::processRequest() {
-  while (running_.load()) {
-    // Wait for incoming request
-    request_queue_counter_.acquire();
-    if (!running_.load()) break;
-
-    request_queue_mutex_.lock();
-    auto request = request_queue_.front();
-    request_queue_.pop();
-    request_queue_mutex_.unlock();
-
-    // Ingest Request NOTE: dont release request_queue_counter_
-    // that should be done by the queue ftn
-    // Should be obvious but I made the mistake once so I might agains
-    ingestRequest(request);
-  }
-}
-
-void RequestIngestor::ingestRequest(const rms::common::Request& req) {
+void RequestIngestor::ingestRequest(const rms::common::Request& req,
+                                    int connection_fd,
+                                    std::shared_ptr<RmsComputer>& computer) {
+  struct rms::common::Response res;
+  res.header.timestamp = rms::common::getTimestamp();
+  res.header.data_count = 0;
   ingestRequestHeader(req.header);
   for (rms::common::RequestData data : req.data) {
-    ingestRequestData(data);
+    ingestRequestData(data, res, computer);
   }
+  size_t data_size =
+      sizeof(rms::common::ResponseHeader) +
+      (sizeof(rms::common::ResponseData) * res.header.data_count);
+  unsigned char res_data[data_size];
+  memcpy(res_data, &res.header, sizeof(rms::common::ResponseHeader));
+
+  unsigned char* data_ptr = res_data + sizeof(rms::common::ResponseHeader);
+  for (int i = 0; i < res.header.data_count; i++) {
+    memcpy(data_ptr, &(res.data[i]), sizeof(rms::common::ResponseData));
+    data_ptr += sizeof(rms::common::ResponseData);
+  }
+  write(connection_fd, res_data, data_size);
 }
 
 const RequestIngestorType RequestIngestor::getRequestIngestorType() {
   return ingestorType_;
-}
-
-int RequestIngestor::start() {
-  running_ = true;
-  work_thread_ = std::thread(&RequestIngestor::processRequest, this);
-  return 0;
-}
-int RequestIngestor::join() {
-  work_thread_.join();
-  return 0;
-}
-int RequestIngestor::stop() {
-  running_.store(false);
-  request_queue_counter_.release();
-  work_thread_.join();
-  return 0;
 }
 
 }  // namespace server
