@@ -12,6 +12,9 @@
 #ifndef _INCLUDE_RMS_COMMON_RMS_DATABASE_H_
 #define _INCLUDE_RMS_COMMON_RMS_DATABASE_H_
 
+namespace rms {
+namespace server {
+
 enum class RmsDatabaseTypes {
   kMySQL,
   kSqlite,
@@ -25,5 +28,8 @@ class RmsDatabase {
   RmsDatabase(const RmsDatabaseTypes& type);
   ~RmsDatabase();
 };
+
+} // namespace server
+} // namespace rms
 
 #endif  // _INCLUDE_RMS_COMMON_RMS_DATABASE_H_

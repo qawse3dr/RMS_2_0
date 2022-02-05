@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 set(SRC_FILES
 
   "src/main.cpp"
+  "src/rms_server.cpp"
 
   # Ingestors
   "src/request_ingestor.cpp"
@@ -10,8 +11,9 @@ set(SRC_FILES
   "src/request_db_ingestor.cpp"
 
 
-  # Handler
+  # Client conneciton
   "src/client_handler.cpp"
+  "src/rms_client.cpp"
 
   # RMS_TERMINAL
   "src/rms_terminal.cpp"

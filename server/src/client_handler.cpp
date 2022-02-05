@@ -13,11 +13,14 @@
 #include <arpa/inet.h>
 #include <linux/socket.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <iostream>
 #include <memory>
 
 #include "rms/common/request_data.h"
+#include "rms/server/rms_server.h"
+#include "rms/server/rms_client.h"
 
 namespace rms {
 namespace server {
@@ -35,46 +38,14 @@ void ClientHandler::acceptClients() {
     connfd = accept(sock_fd_, (struct sockaddr*)&cli, &len);
     if (connfd < 0) continue;
 
-    threads_.emplace_back(
-        std::thread(&ClientHandler::clientReader, this, connfd));
+    // Create Client, and start it up based on given fd
+    std::unique_ptr<RmsClient> client = std::make_unique<RmsClient>(connfd);
+    client->start();
+
+    // Adds client to server
+    RmsServer::getInstance()->addClient(std::move(client));
   }
 }
-
-void ClientHandler::clientReader(int connection_fd) {
-  std::shared_ptr<RmsComputer> computer;
-
-  while (running_) {
-    rms::common::Request req;
-    // Reads header
-    if (read(connection_fd, &req.header, sizeof(rms::common::RequestHeader)) ==
-        0) {
-      std::cerr << "\nConnection Dropped" << std::endl;
-      break;
-    }
-
-    rms::common::RequestData buffer[req.header.data_count];
-    if (read(connection_fd, &buffer,
-             sizeof(rms::common::RequestData) * req.header.data_count) == 0) {
-      std::cerr << "\nConnection Dropped" << std::endl;
-      break;
-    }
-    for (int i = 0; i < req.header.data_count; i++) {
-      req.data.emplace_back(std::move(buffer[i]));
-    }
-
-    ingestor_->ingestRequest(req, connection_fd,
-                             computer);  // this should be serial
-
-    // Add the request to the queue so that it doesn't block future requests
-    // and can be dealt with later
-    // ingestor_->queueRequest(std::move(req));
-  }
-  // After chatting close the socket
-  close(connection_fd);
-}
-
-ClientHandler::ClientHandler(const std::shared_ptr<RequestIngestor>& ingestor)
-    : ingestor_(ingestor) {}
 
 // taken from
 // https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
@@ -110,14 +81,10 @@ void ClientHandler::startListener(int port) {
 void ClientHandler::stopListening() {
   running_ = false;
   // Shuts down work thread
-  shutdown(sock_fd_, SHUT_RD);
+  shutdown(sock_fd_, SHUT_RDWR);
+  close(sock_fd_); // close server fd
 
-  // close(sock_fd_); // close server fd
   accept_clients_thread_.join();
-  // Shuts down children threads
-  for (std::thread& t : threads_) {
-    t.join();
-  }
 }
 
 void ClientHandler::wait() { accept_clients_thread_.join(); }

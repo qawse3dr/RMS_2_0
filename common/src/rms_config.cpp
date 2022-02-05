@@ -31,6 +31,16 @@ const std::string& RmsConfig::find(const std::string& key) {
   return empty_str_;
 }
 
+/**
+ * Find given value for key
+ * if RmsConfig is not set up or the key is not found returns null
+ */
+int RmsConfig::findInt(const std::string& key) {
+  const auto& str = find(key);
+  if(str.empty()) return -1;
+  else return std::stod(str); // Assume this will work, crash if it doesn't
+}
+
 /** save the config to config_path_. if its not setup nothing will happen
  * but msg will be logged
  */
