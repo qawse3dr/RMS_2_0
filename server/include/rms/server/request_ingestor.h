@@ -13,7 +13,7 @@
 
 #include "rms/common/request_data.h"
 #include "rms/common/response_data.h"
-#include "rms/server/rms_computer.h"
+#include "rms/server/rms_client.h"
 
 #ifndef _INCLUDE_SERVER_INGESTOR_SERVER_H_
 #define _INCLUDE_SERVER_INGESTOR_SERVER_H_
@@ -44,14 +44,12 @@ class RequestIngestor {
   virtual void ingestRequestHeader(
       const rms::common::RequestHeader& header) = 0;
   virtual void ingestRequestData(const common::RequestData& data,
-                                 common::Response&,
-                                 std::shared_ptr<RmsComputer>&) = 0;
+                                 common::Response&, std::shared_ptr<RmsComputer>& computer) = 0;
 
  public:
   RequestIngestor(RequestIngestorType type);
 
-  void ingestRequest(const rms::common::Request& req, int fd,
-                     std::shared_ptr<RmsComputer>&);
+  void ingestRequest(const rms::common::Request& req, rms::common::Response&& res, int fd, std::shared_ptr<RmsComputer>& computer);
   void queueRequest(rms::common::Request&& req);
   void processRequest();
 

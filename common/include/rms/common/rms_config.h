@@ -33,7 +33,7 @@ class RmsConfig {
    * if RmsConfig is not set up or the key is not found returns null
    */
   static const std::string& find(const std::string& key);
-
+  static int findInt(const std::string& key);
   /** save the config to config_path_. if its not setup nothing will happen
    * but msg will be logged
    */

@@ -20,8 +20,7 @@ class LogRequestIngestor : public RequestIngestor {
  protected:
   void ingestRequestHeader(const rms::common::RequestHeader& header) override;
   void ingestRequestData(const rms::common::RequestData& data,
-                         rms::common::Response&,
-                         std::shared_ptr<RmsComputer>& computer) override;
+                         rms::common::Response&, std::shared_ptr<RmsComputer>& computer) override;
 
  public:
   LogRequestIngestor();

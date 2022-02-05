@@ -27,15 +27,16 @@ void LogRequestIngestor::ingestRequestHeader(
 }
 
 void LogRequestIngestor::ingestRequestData(
-    const rms::common::RequestData& data, rms::common::Response& res,
-    std::shared_ptr<RmsComputer>& computer) {
+    const rms::common::RequestData& data, rms::common::Response& res, std::shared_ptr<RmsComputer>& computer) {
+
+
   switch (data.type) {
     case rms::common::RequestTypes::kHandshakeStart:
       std::cout << "handshake started" << std::endl;
       // TODO start db transaction
       if (data.long_ != -1)
         computer = std::make_shared<RmsComputer>(data.long_);
-      else
+      else;
         computer = std::make_shared<RmsComputer>();
       break;
     case rms::common::RequestTypes::kHandshakeEnd:
@@ -45,10 +46,7 @@ void LogRequestIngestor::ingestRequestData(
       data.type = rms::common::ResponseTypes::kHandShake;
       data.long_ = computer->getComputerId();
       res.data.emplace_back(std::move(data));
-      // todo add response for handshake complete with the data being the
       // computer_id for log just return -1
-
-      // end db transaction and send it off this should be done in rms_computer
   }
   rms::common::printRequestData(data);
 }

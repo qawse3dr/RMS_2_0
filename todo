@@ -3,11 +3,17 @@ FEATURES
   - Create Database
     - create tables
   - Create Logger or a one maybe as a separate project so i can reuse it for other cpp projects  
-
+  - list current clients 
+  - list current info about clients (display computer)
 BUGS
 
 REFACTOR
-  - move reporter request_client from common to reporter
   - Have a pool of consumers that get jobs given to it
     having a thread per consumer could be wasting performance so a queue job might
     be useful to decrease thread count without losing performance.
+  - Change programs to use pthread_sigmask()
+  - The server and reporter code should really be gutted and fixed up
+  - There is not really flow or to how the code is written. There should be a
+    singleton class that controls everything, so from main a single function
+    can be called to start. this will also make it easier to hold shared data
+    such as the computers on the server (Done for server)

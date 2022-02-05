@@ -17,24 +17,20 @@
 
 #include "rms/server/request_ingestor.h"
 
-#ifndef _SERVER_REQUEST_LISTENER_H_
-#define _SERVER_REQUEST_LISTENER_H_
+#ifndef _SERVER_CLIENT_HANDLER_H_
+#define _SERVER_CLIENT_HANDLER_H_
 
 namespace rms {
 namespace server {
 
 class ClientHandler {
  private:
-  std::vector<std::thread> threads_;
   std::thread accept_clients_thread_;
   std::atomic_bool running_;
 
   // server tcp fd
   int sock_fd_;
 
-  std::shared_ptr<RequestIngestor> ingestor_;
-
-  // client info
 
   /**
    * Accepts new conenctions from client
@@ -43,13 +39,9 @@ class ClientHandler {
    */
   void acceptClients();
 
-  /**
-   * Reads the data and does any work needed for the client
-   */
-  void clientReader(int connection_fd);
 
  public:
-  ClientHandler(const std::shared_ptr<RequestIngestor>& ingestor);
+  ClientHandler() = default;
 
   /**
    * Starts listening for new conenctions on passed port.
@@ -64,4 +56,4 @@ class ClientHandler {
 }  // namespace server
 }  // namespace rms
 
-#endif  // _SERVER_REQUEST_LISTENER_H_
+#endif  // _SERVER_CLIENT_HANDLER_H_

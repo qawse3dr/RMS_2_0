@@ -98,7 +98,7 @@ class RmsComputer {
   void addStorageDevice(const rms::common::StorageInfo& dev);
   void addNetworkDevice(const rms::common::NetworkInfo& dev);
 
-  inline int getComputerId() { return computer_id_; }
+  inline const int& getComputerId() const { return computer_id_; }
 
   inline void startTransaction() { transaction = true; };
 
