@@ -16,7 +16,8 @@
 #include "rms/common/rms_version_info.h"
 #include "rms/server/client_handler.h"
 #include "rms/server/request_log_ingestor.h"
-#include "rms/server/rms_terminal.h"
+#include "rms/server/rms_server.h"
+
 // main
 void rms_exit_handler(int sig);
 extern std::unique_ptr<rms::server::ClientHandler> client_handler;
@@ -27,17 +28,20 @@ namespace server {
 int rmsStatus();
 int rmsSendCMD(std::string cmd);
 
-int rmsTerminal() {
+void rmsTerminal() {
   std::string cmd;
-  while (1) {
+  while (RmsServer::isRunning()) {
     /* prompt again */
     if (isatty(0)) printf("RMS> ") >= 0 && fflush(stdout);
     std::getline(std::cin, cmd);
     if (cmd == "exit") {
       rms_exit_handler(0);
+      break;
     } else if (cmd == "status") {
       std::cout << "RMS INFO" << std::endl;
-      std::cout << "--------" << std::endl;
+      std::cout << "--------" << std::endl << std::endl;
+      std::cout << "Clients conencted: "
+                << RmsServer::getInstance()->clientsConnected() << std::endl;
 
     } else if (cmd == "version") {
       std::cout << "RMS(Remote Management System) server version "
@@ -47,11 +51,39 @@ int rmsTerminal() {
       std::cout << "Created and maintained by Larry Milne a.k.a qawse3dr"
                 << std::endl;
     } else if (cmd.starts_with("list")) {
-      std::cout << "lists info maybe list client, list supported stuff,..."
-                << std::endl;
+      if (cmd == "list clients") {
+        RmsServer::getInstance()->printClients();
 
+      } else {
+        std::cerr << "Invalid option valid list options are" << std::endl;
+        std::cerr << "\t clients" << std::endl;
+      }
     } else if (cmd.starts_with("info")) {
       std::cout << "Prints info about stuff" << std::endl;
+    } else if (cmd.starts_with("get")) {
+      if (cmd.starts_with("get sys-info")) {
+        int id = -1;
+        if (sscanf(cmd.c_str(), "get sys-info %d", &id) != EOF) {
+          auto client = RmsServer::getInstance()->getClient(id);
+          if (client != nullptr) {
+            // Create reponse data
+            rms::common::ResponseData res_data;
+            res_data.type = rms::common::ResponseTypes::kSendSystemInfo;
+            res_data.long_ = 0;
+            // add response
+            client->addResponse(std::move(res_data));
+          } else {
+            std::cerr << "Client with id: " << id << " Does not exist"
+                      << std::endl;
+          }
+        } else {
+          std::cerr << "missing or invalid ID USAGE:" << std::endl;
+          std::cerr << "\t sys-info <id>" << std::endl;
+        }
+      } else {
+        std::cerr << "Invalid option valid list options are" << std::endl;
+        std::cerr << "\t sys-info <id>" << std::endl;
+      }
     }
   }
 }

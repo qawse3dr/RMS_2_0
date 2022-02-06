@@ -37,8 +37,10 @@ const std::string& RmsConfig::find(const std::string& key) {
  */
 int RmsConfig::findInt(const std::string& key) {
   const auto& str = find(key);
-  if(str.empty()) return -1;
-  else return std::stod(str); // Assume this will work, crash if it doesn't
+  if (str.empty())
+    return -1;
+  else
+    return std::stod(str);  // Assume this will work, crash if it doesn't
 }
 
 /** save the config to config_path_. if its not setup nothing will happen

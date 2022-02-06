@@ -31,14 +31,12 @@ class ClientHandler {
   // server tcp fd
   int sock_fd_;
 
-
   /**
    * Accepts new conenctions from client
    * taking in a new connection starting a new thread with that
    * tcp_fd with ClientHandler::clientReader.
    */
   void acceptClients();
-
 
  public:
   ClientHandler() = default;

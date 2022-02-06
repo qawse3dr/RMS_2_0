@@ -46,6 +46,7 @@ int RmsReporterClient::start() {
   for (auto& consumer : consumers_) {
     consumer->start();
   }
+  sys_consumer_->start();
   return 0;
 }
 
