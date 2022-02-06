@@ -99,6 +99,7 @@ class RmsComputer {
   void addNetworkDevice(const rms::common::NetworkInfo& dev);
 
   inline const int& getComputerId() const { return computer_id_; }
+  inline const std::string& getHostName() const { return host_name_; }
 
   inline void startTransaction() { transaction = true; };
 

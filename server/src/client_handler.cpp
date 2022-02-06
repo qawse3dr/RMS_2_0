@@ -19,8 +19,8 @@
 #include <memory>
 
 #include "rms/common/request_data.h"
-#include "rms/server/rms_server.h"
 #include "rms/server/rms_client.h"
+#include "rms/server/rms_server.h"
 
 namespace rms {
 namespace server {
@@ -82,7 +82,7 @@ void ClientHandler::stopListening() {
   running_ = false;
   // Shuts down work thread
   shutdown(sock_fd_, SHUT_RDWR);
-  close(sock_fd_); // close server fd
+  close(sock_fd_);  // close server fd
 
   accept_clients_thread_.join();
 }

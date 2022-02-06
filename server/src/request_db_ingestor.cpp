@@ -17,8 +17,7 @@ namespace rms {
 namespace server {
 
 DbRequestIngestor::DbRequestIngestor()
-    : RequestIngestor(RequestIngestorType::KdbIngestor),
-      database_(nullptr) {}
+    : RequestIngestor(RequestIngestorType::KdbIngestor), database_(nullptr) {}
 
 void DbRequestIngestor::ingestRequestHeader(
     const rms::common::RequestHeader& header) {
@@ -28,7 +27,8 @@ void DbRequestIngestor::ingestRequestHeader(
 }
 
 void DbRequestIngestor::ingestRequestData(
-    const rms::common::RequestData& data, rms::common::Response&, std::shared_ptr<RmsComputer>& computer) {
+    const rms::common::RequestData& data, rms::common::Response&,
+    std::shared_ptr<RmsComputer>& computer) {
   rms::common::printRequestData(data);
 }
 }  // namespace server

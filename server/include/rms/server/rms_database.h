@@ -29,7 +29,7 @@ class RmsDatabase {
   ~RmsDatabase();
 };
 
-} // namespace server
-} // namespace rms
+}  // namespace server
+}  // namespace rms
 
 #endif  // _INCLUDE_RMS_COMMON_RMS_DATABASE_H_

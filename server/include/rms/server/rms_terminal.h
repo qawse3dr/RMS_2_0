@@ -27,7 +27,7 @@ namespace server {
  * Will do simple commands like print how many computers connected and info
  * about them as well as be able to send commands to the connected computers
  */
-int rmsTerminal();
+void rmsTerminal();
 
 }  // namespace server
 }  // namespace rms

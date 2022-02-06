@@ -18,26 +18,22 @@ namespace server {
 RequestIngestor::RequestIngestor(RequestIngestorType type)
     : ingestorType_(type) {}
 
-void RequestIngestor::ingestRequest(const rms::common::Request& req, rms::common::Response&& res,
-                                    int connection_fd, std::shared_ptr<RmsComputer>& computer) {
-  
- 
-
+void RequestIngestor::ingestRequest(const rms::common::Request& req,
+                                    rms::common::Response&& res,
+                                    int connection_fd,
+                                    std::shared_ptr<RmsComputer>& computer) {
   // Ingest Request (ingestors will add response data)
   ingestRequestHeader(req.header);
   for (rms::common::RequestData data : req.data) {
     ingestRequestData(data, res, computer);
   }
 
-  // Append general request (which isn't dependant on ingestor type)
-  // computer->getReponseData()
-
   // Create Response data array
   size_t data_size =
       sizeof(rms::common::ResponseHeader) +
       (sizeof(rms::common::ResponseData) * res.header.data_count);
   unsigned char res_data[data_size];
-  
+
   // Copy response Header
   memcpy(res_data, &res.header, sizeof(rms::common::ResponseHeader));
 
