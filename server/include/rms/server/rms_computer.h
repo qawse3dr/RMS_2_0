@@ -115,6 +115,8 @@ class RmsComputer {
    * is created saving on sql calls
    */
   void addToDB();
+
+  std::string toString() const;
 };
 
 }  // namespace server

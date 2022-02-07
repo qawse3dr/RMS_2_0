@@ -8,9 +8,8 @@
 
 static void sigint_handler(int sig) {
   printf("RMS 2.0 shutting down\n");
-  rms::reporter::RmsReporterClient::ReporterClient()->stop();
-  rms::reporter::RmsReporterClient::free();
-  rms::reporter::request_client_.stop();
+  rms::reporter::RmsReporterClient::getInstance()->stop();
+  rms::reporter::RmsReporterClient::cleanUp();
   exit(0);
 }
 
@@ -23,12 +22,10 @@ int main() {
   rms::common::RmsConfig::load(
       "/home/larry/Programming/C++/RMS_2_0/rms_reporter.cfg");
 
-  // start request_client_
-  rms::reporter::request_client_.start();
+  rms::reporter::RmsReporterClient::getInstance()->start();
 
-  rms::reporter::RmsReporterClient::ReporterClient()->start();
-
-  rms::reporter::RmsReporterClient::ReporterClient()->join();
+  // Change to sigwaitinfo
+  rms::reporter::RmsReporterClient::getInstance()->join();
 
   return 0;
 }

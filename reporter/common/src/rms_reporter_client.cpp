@@ -8,24 +8,25 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "rms/reporter/common/rms_reporter_client.h"
-
 #include "rms/reporter/common/consumer/cpu_consumer.h"
 #include "rms/reporter/common/consumer/ram_consumer.h"
+#include "rms/reporter/common/rms_reporter_client.h"
 
 namespace rms {
 namespace reporter {
 
 RmsReporterClient* RmsReporterClient::reporter_client_ = nullptr;
 
-RmsReporterClient* RmsReporterClient::ReporterClient() {
+RmsReporterClient* RmsReporterClient::getInstance() {
   if (!reporter_client_) reporter_client_ = new RmsReporterClient();
   return reporter_client_;
 }
 
-void RmsReporterClient::free() {
-  delete reporter_client_;
-  reporter_client_ = nullptr;
+void RmsReporterClient::cleanUp() {
+  if (reporter_client_) {  // only cleanup if it exists
+    delete reporter_client_;
+    reporter_client_ = nullptr;
+  }
 }
 
 RmsReporterClient::RmsReporterClient() {
@@ -43,6 +44,9 @@ RmsReporterClient::RmsReporterClient() {
 }
 
 int RmsReporterClient::start() {
+  // start request client
+  request_client_.start();
+  // Start Consumers
   for (auto& consumer : consumers_) {
     consumer->start();
   }
@@ -54,6 +58,11 @@ int RmsReporterClient::stop() {
   for (auto& consumer : consumers_) {
     consumer->stop();
   }
+  sys_consumer_->stop();
+  request_client_.stop();
+
+  // Wait for everything to exist
+  join();
   return 0;
 }
 
@@ -61,6 +70,8 @@ int RmsReporterClient::join() {
   for (auto& consumer : consumers_) {
     consumer->join();
   }
+  sys_consumer_->join();
+  request_client_.join();
   return 0;
 }
 

@@ -77,8 +77,6 @@ class RequestClient {
   void stop();
 };
 
-extern RequestClient request_client_;
-
 }  // namespace reporter
 }  // namespace rms
 

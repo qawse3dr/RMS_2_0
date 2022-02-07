@@ -8,8 +8,6 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "rms/reporter/common/request_client.h"
-
 #include <arpa/inet.h>
 #include <signal.h>
 
@@ -17,6 +15,7 @@
 
 #include "rms/common/response_data.h"
 #include "rms/common/rms_config.h"
+#include "rms/reporter/common/request_client.h"
 #include "rms/reporter/common/rms_reporter_client.h"
 
 void sigPipeHander(int s) { std::cerr << "pipe Broke" << std::endl; }
@@ -134,7 +133,7 @@ int RequestClient::handleResponseData(const ResponseData& res_data,
   switch (res_data.type) {
     case ResponseTypes::kSendSystemInfo:
       std::cout << "Sending sysInfo" << std::endl;
-      RmsReporterClient::ReporterClient()->triggerSysConsumer();
+      RmsReporterClient::getInstance()->triggerSysConsumer();
       break;
     case ResponseTypes::kHandShake: {
       std::cout << "Handshake Complete" << std::endl;
