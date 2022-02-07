@@ -8,8 +8,6 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "rms/server/rms_terminal.h"
-
 #include <csignal>
 #include <iostream>
 
@@ -17,6 +15,7 @@
 #include "rms/server/client_handler.h"
 #include "rms/server/request_log_ingestor.h"
 #include "rms/server/rms_server.h"
+#include "rms/server/rms_terminal.h"
 
 // main
 void rms_exit_handler(int sig);
@@ -59,10 +58,22 @@ void rmsTerminal() {
         std::cerr << "\t clients" << std::endl;
       }
     } else if (cmd.starts_with("info")) {
-      std::cout << "Prints info about stuff" << std::endl;
+      if (cmd.starts_with("info client")) {
+        int id = -2;
+        if (sscanf(cmd.c_str(), "info client %d", &id) != EOF) {
+          auto client = RmsServer::getInstance()->getClient(id);
+          if (client != nullptr) {
+            // Create reponse data
+            std::cout << client->getComputerAsString();
+          } else {
+            std::cerr << "Client with id: " << id << " Does not exist"
+                      << std::endl;
+          }
+        }
+      }
     } else if (cmd.starts_with("get")) {
       if (cmd.starts_with("get sys-info")) {
-        int id = -1;
+        int id = -2;
         if (sscanf(cmd.c_str(), "get sys-info %d", &id) != EOF) {
           auto client = RmsServer::getInstance()->getClient(id);
           if (client != nullptr) {

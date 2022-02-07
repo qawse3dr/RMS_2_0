@@ -1,10 +1,11 @@
-#include "rms/server/rms_computer.h"
-
 #include <arpa/inet.h>
 
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include <tuple>
+
+#include "rms/server/rms_computer.h"
 
 namespace rms {
 namespace server {
@@ -150,6 +151,43 @@ void RmsComputer::addToDB() {
 
   // add to db
   computer_id_ = 1;
+}
+
+std::string RmsComputer::toString() const {
+  std::stringstream ss;
+
+  ss << "Computer id:         " << computer_id_ << std::endl;
+  ss << "Computer sys_name:   " << system_name_ << std::endl;
+  ss << "Computer host_name:  " << host_name_ << std::endl;
+  ss << "Computer os_ver:     " << static_cast<int>(os_version_.major) << "."
+     << static_cast<int>(os_version_.minor) << "."
+     << static_cast<int>(os_version_.release) << std::endl;
+  ss << "Computer cpu_vendor: " << cpu_vendor_ << std::endl;
+  ss << "Computer cpu_name:   " << cpu_name_ << std::endl;
+  ss << "Computer cpu_cores:  " << cpu_core_count_ << std::endl;
+  ss << "Computer cpu_cache:  " << cpu_cache_size_ << std::endl;
+  ss << "Computer cpu_arch_:  " << cpu_arch_ << std::endl;
+  ss << "Computer Storage Devices" << std::endl;
+  for (const RmsStorageInfo& info : storage_info_) {
+    ss << "{"
+       << "name:" << info.dev_path_ << ", type:" << info.fs_type_
+       << ", connected:" << std::to_string(info.connected_)
+       << ", capacity: " << info.total_ - info.free_ << "/" << info.total_
+       << "}" << std::endl;
+  }
+  ss << "Computer Network Devices" << std::endl;
+  for (const RmsNetworkInfo& info : network_info_) {
+    ss << "{"
+       << "name:" << info.interface_name_
+       << ", connected:" << std::to_string(info.connected_) << ", IPS:[ ";
+
+    for (const RmsNetworkIPS& ip : info.ips_) {
+      ss << ip.ip << ", ";
+    }
+
+    ss << "]}" << std::endl;
+  }
+  return ss.str();
 }
 
 }  // namespace server

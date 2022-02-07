@@ -71,8 +71,11 @@ class RmsClient {
   void addResponse(rms::common::ResponseData&& res);
 
   inline bool dead() { return dead_; }
-  inline const int& getId() { return computer_->getComputerId(); }
-  inline const std::string& getName() { return computer_->getHostName(); }
+  inline const int& getId() const { return computer_->getComputerId(); }
+  inline const std::string& getName() const { return computer_->getHostName(); }
+  inline std::string getComputerAsString() const {
+    return computer_->toString();
+  }
   // TODO add ways to interface with computer_ maybe...
 };
 
