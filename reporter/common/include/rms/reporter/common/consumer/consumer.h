@@ -50,10 +50,10 @@ class Consumer : public IConsumer {
  public:
   Consumer(const Consumer&) = delete;
   Consumer(Consumer&&) = delete;
-
   /* Takes in a unique pointer the the reporter which should be created in the
    * child consumer*/
   Consumer(std::unique_ptr<R>&& reporter) : reporter_(std::move(reporter)){};
+  virtual ~Consumer() {}
 
   int start() {
     is_consuming_ = true;

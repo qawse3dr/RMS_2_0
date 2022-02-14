@@ -8,13 +8,14 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "rms/server/rms_server.h"
-
 #include <algorithm>
 #include <iostream>
 
 #include "rms/common/rms_config.h"
-#include "rms/server/request_log_ingestor.h"
+#include "rms/server/database/rms_sqlite_database.h"
+#include "rms/server/ingestor/request_db_ingestor.h"
+#include "rms/server/ingestor/request_log_ingestor.h"
+#include "rms/server/rms_server.h"
 #include "rms/server/rms_terminal.h"
 
 namespace rms {
@@ -24,7 +25,6 @@ RmsServer* RmsServer::server_ = nullptr;
 
 RmsServer::RmsServer() : clients_() {
   client_handler_ = std::make_unique<ClientHandler>();
-  ingestor_ = std::make_unique<LogRequestIngestor>();
 }
 RmsServer* RmsServer::getInstance() {
   if (!server_) server_ = new RmsServer();
@@ -35,6 +35,21 @@ int RmsServer::start() {
   // Load in config
   rms::common::RmsConfig::load(
       "/home/larry/Programming/C++/RMS_2_0/rms_server.cfg");
+
+  // start up db
+  std::string db_type = rms::common::RmsConfig::find(RMS_SERVER_CONFIG_DB_TYPE);
+  if (db_type == "log") {
+    ingestor_ = std::make_unique<LogRequestIngestor>();
+  } else if (db_type == "sqlite") {
+    ingestor_ = std::make_unique<DbRequestIngestor>();
+    database_ = std::make_unique<RmsSqliteDatabase>();
+  } else if (db_type == "mysql") {
+    std::cerr << "NOT IMPLEMENTED" << std::endl;
+    exit(1);
+  } else {
+    std::cerr << "DB Type does not exist" << db_type << std::endl;
+    exit(1);
+  }
 
   // start client handler
   client_handler_->startListener(

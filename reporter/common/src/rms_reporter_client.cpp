@@ -45,12 +45,12 @@ RmsReporterClient::RmsReporterClient() {
 
 int RmsReporterClient::start() {
   // start request client
-  request_client_.start();
   // Start Consumers
   for (auto& consumer : consumers_) {
     consumer->start();
   }
   sys_consumer_->start();
+  request_client_.start();
   return 0;
 }
 
@@ -60,9 +60,6 @@ int RmsReporterClient::stop() {
   }
   sys_consumer_->stop();
   request_client_.stop();
-
-  // Wait for everything to exist
-  join();
   return 0;
 }
 

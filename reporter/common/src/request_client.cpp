@@ -1,5 +1,3 @@
-#include "rms/reporter/common/request_client.h"
-
 #include <cstring>
 #include <iostream>
 #include <tuple>
@@ -8,6 +6,7 @@
 #include "rms/common/rms_config.h"
 #include "rms/common/rms_version_info.h"
 #include "rms/common/util.h"
+#include "rms/reporter/common/request_client.h"
 #include "rms/reporter/common/rms_reporter_client.h"
 
 // Used for tuples to make reading the get value easier.
@@ -57,6 +56,10 @@ void RequestClient::sendRequest(const RequestProtocol& type, Request&& req) {
 }
 
 void RequestClient::pollRequests() {
+  // TODO add so this is only started if client is using tcp
+  poll_requests_.store(true);
+  while ((setupTCP() || handshakeTCP()) && poll_requests_)
+    ;
   bool failed = false;
   while (poll_requests_.load()) {
     request_counter_.acquire();
@@ -92,10 +95,6 @@ void RequestClient::pollRequests() {
 }
 
 void RequestClient::start() {
-  // TODO add so this is only started if client is using tcp
-  while (setupTCP() || handshakeTCP())
-    ;
-  poll_requests_.store(true);
   work_thread_ = std::thread(&RequestClient::pollRequests, this);
 }
 

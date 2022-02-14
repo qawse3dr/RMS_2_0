@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(RMS_2_0)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # TODO add choice for which platform to build
 add_subdirectory(common)

@@ -6,17 +6,14 @@
 #include "rms/reporter/common/request_client.h"
 #include "rms/reporter/common/rms_reporter_client.h"
 
-static void sigint_handler(int sig) {
-  printf("RMS 2.0 shutting down\n");
-  rms::reporter::RmsReporterClient::getInstance()->stop();
-  rms::reporter::RmsReporterClient::cleanUp();
-  exit(0);
-}
-
 int main() {
   std::cout << "Welcome to RMS 2.0" << std::endl;
 
-  signal(SIGINT, sigint_handler);
+  sigset_t sig_mask;
+  sigemptyset(&sig_mask);
+  sigaddset(&sig_mask, SIGINT);
+  sigaddset(&sig_mask, SIGTERM);
+  pthread_sigmask(SIG_BLOCK, &sig_mask, NULL);
 
   // Reads config
   rms::common::RmsConfig::load(
@@ -24,8 +21,13 @@ int main() {
 
   rms::reporter::RmsReporterClient::getInstance()->start();
 
-  // Change to sigwaitinfo
-  rms::reporter::RmsReporterClient::getInstance()->join();
+  // wait for sigint or sigterm
+  std::cout << "Control+C to exit" << std::endl;
+  sigwaitinfo(&sig_mask, NULL);
+  std::cout << std::endl << "RMS 2.0 shutting down" << std::endl;
+
+  rms::reporter::RmsReporterClient::getInstance()->stop();
+  rms::reporter::RmsReporterClient::cleanUp();
 
   return 0;
 }

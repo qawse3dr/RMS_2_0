@@ -52,7 +52,7 @@ int RequestClient::setupTCP() {
   if (connect(tcp_sockfd_, (struct sockaddr*)&tcp_address_,
               sizeof(tcp_address_)) < 0) {
     perror("Couldn't connect to server");
-    sleep(1);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     return -1;
   }
   // setup worked

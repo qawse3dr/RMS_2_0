@@ -14,6 +14,7 @@ class Reporter {
   Reporter(const Reporter&) = delete;
   Reporter(Reporter&&) = delete;
   Reporter() = default;
+  virtual ~Reporter() {}
 
   virtual std::array<T, N> report() = 0;
 

@@ -64,6 +64,7 @@ class RequestClient {
 
  public:
   RequestClient();
+  ~RequestClient() {}
 
   /**
    * Sends a request with a given protocal currently only kLog and kTCP are

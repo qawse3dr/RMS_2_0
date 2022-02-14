@@ -70,38 +70,47 @@ class RmsComputer {
   std::vector<RmsNetworkInfo> network_info_;
 
   // transaction
-  bool transaction = false;
-  bool transaction_computer_changed = false;
+  bool transaction_ = false;
+  bool transaction_computer_changed_ = false;
   std::vector<RmsStorageInfo> transaction_storage_info_;
   std::vector<RmsNetworkInfo> transaction_network_info_;
 
  public:
-  /** create a blank computer i.e provision it on the database side and set
-   * the id*/
-  RmsComputer();
-
-  /** computer exists use computer_id to fetch the data*/
+  /** Create computer with given ID*/
   RmsComputer(const int computer_id);
 
   // Setters
   void setSysName(const char* name);
+  inline const std::string& getSysName() const { return system_name_; }
   void setHostName(const char* name);
+  inline const std::string& getHostName() const { return host_name_; }
 
   void setOSVersion(const rms::common::VersionData& ver);
+  inline const rms::common::VersionData& getOSVersion() const {
+    return os_version_;
+  }
   void setClientVersion(const rms::common::VersionData& ver);
+  inline const rms::common::VersionData& getClientVersion() const {
+    return client_version_;
+  }
 
   void setCpuName(const char* name);
+  inline const std::string& getCpuName() const { return cpu_name_; }
   void setCpuVendor(const char* name);
+  inline const std::string& getCpuVendor() const { return cpu_vendor_; }
 
   void setCpuInfo(const rms::common::CpuInfo& cpu);
+  inline const int& getCpuCoreCount() const { return cpu_core_count_; }
+  inline const int& getCpuCacheSize() const { return cpu_cache_size_; }
+  inline const std::string& getCpuArch() const { return cpu_arch_; }
 
   void addStorageDevice(const rms::common::StorageInfo& dev);
   void addNetworkDevice(const rms::common::NetworkInfo& dev);
 
+  inline void setComputerId(int id) { computer_id_ = id; }
   inline const int& getComputerId() const { return computer_id_; }
-  inline const std::string& getHostName() const { return host_name_; }
 
-  inline void startTransaction() { transaction = true; };
+  inline void startTransaction() { transaction_ = true; };
 
   // Ends the transaction and pushes it to the db
   void endTransaction();

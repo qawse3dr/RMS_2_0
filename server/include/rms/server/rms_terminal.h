@@ -15,8 +15,6 @@
 #include <thread>
 #include <vector>
 
-#include "rms/server/request_ingestor.h"
-
 #ifndef _SERVER_RMS_TERMINAL_H_
 #define _SERVER_RMS_TERMINAL_H_
 

@@ -8,19 +8,15 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "rms/server/request_ingestor.h"
-#include "rms/server/rms_database.h"
+#include "rms/server/ingestor/request_ingestor.h"
 
-#ifndef _INCLUDE_SERVER_INGESTOR_DB_SERVER_H_
-#define _INCLUDE_SERVER_INGESTOR_DB_SERVER_H_
+#ifndef _INCLUDE_SERVER_INGESTOR_LOG_SERVER_H_
+#define _INCLUDE_SERVER_INGESTOR_LOG_SERVER_H_
 
 namespace rms {
 namespace server {
 
-class DbRequestIngestor : public RequestIngestor {
- private:
-  std::unique_ptr<RmsDatabase> database_;
-
+class LogRequestIngestor : public RequestIngestor {
  protected:
   void ingestRequestHeader(const rms::common::RequestHeader& header) override;
   void ingestRequestData(const rms::common::RequestData& data,
@@ -28,7 +24,7 @@ class DbRequestIngestor : public RequestIngestor {
                          std::shared_ptr<RmsComputer>& computer) override;
 
  public:
-  DbRequestIngestor();
+  LogRequestIngestor();
 };
 
 }  // namespace server

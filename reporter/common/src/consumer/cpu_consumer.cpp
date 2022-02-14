@@ -8,7 +8,9 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
+#include <chrono>
 #include <iostream>
+#include <thread>
 
 #include "rms/common/rms_config.h"
 #include "rms/common/util.h"
@@ -80,7 +82,9 @@ void CpuConsumer::consume() {
     copyCpuUsageStats(usage, old_stats);
 
     // TODO make config maybe this should be grabbed from the server
-    sleep(timeout_);
+    for (int i = 0; i < timeout_ && is_consuming_; i++) {
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
   }
 }
 

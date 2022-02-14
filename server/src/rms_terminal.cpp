@@ -13,7 +13,7 @@
 
 #include "rms/common/rms_version_info.h"
 #include "rms/server/client_handler.h"
-#include "rms/server/request_log_ingestor.h"
+#include "rms/server/ingestor/request_log_ingestor.h"
 #include "rms/server/rms_server.h"
 #include "rms/server/rms_terminal.h"
 
