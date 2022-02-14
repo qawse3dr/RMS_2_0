@@ -19,6 +19,7 @@ int main() {
   sigset_t sig_mask;
   sigemptyset(&sig_mask);
   sigaddset(&sig_mask, SIGINT);
+  sigaddset(&sig_mask, SIGTERM);
   pthread_sigmask(SIG_BLOCK, &sig_mask, NULL);
 
   std::cout << "Welcome to RMS (Remote Management System) 2.0" << std::endl;

@@ -21,6 +21,7 @@ namespace reporter {
 class CpuConsumer : public Consumer<CpuReporter> {
  public:
   CpuConsumer(int core_count);
+  virtual ~CpuConsumer() {}
 
  protected:
   void consume() override;

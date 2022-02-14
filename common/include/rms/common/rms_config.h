@@ -53,8 +53,10 @@ class RmsConfig {
 #define RMS_REPORTER_CONFIG_SERVER_IP "server_ip"
 #define RMS_REPORTER_CONFIG_SERVER_PORT "server_port"
 #define RMS_REPORTER_CONFIG_TIMEOUT "timeout"
-// Server Configs
 
+// Server Configs
+#define RMS_SERVER_CONFIG_DB_TYPE "db_type"
+#define RMS_SERVER_CONFIG_SQLITE_DB_PATH "db_path"
 // Client Configs (this may not exist idk yet)
 
 }  // namespace common

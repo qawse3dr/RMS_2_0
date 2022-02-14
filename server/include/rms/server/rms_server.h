@@ -23,7 +23,8 @@
 #include <mutex>
 
 #include "rms/server/client_handler.h"
-#include "rms/server/request_ingestor.h"
+#include "rms/server/database/rms_database.h"
+#include "rms/server/ingestor/request_ingestor.h"
 #include "rms/server/rms_client.h"
 #include "rms/server/rms_computer.h"
 
@@ -41,6 +42,8 @@ class RmsServer {
 
   std::vector<std::shared_ptr<RmsClient>> clients_;
   std::mutex client_mutex_;
+
+  std::unique_ptr<RmsDatabase> database_ = nullptr;
 
   /**
    * @brief Get the Clients object.
@@ -125,6 +128,14 @@ class RmsServer {
    */
   inline const std::unique_ptr<RequestIngestor>& getIngestor() {
     return ingestor_;
+  }
+
+  inline bool getComputerFromDB(std::shared_ptr<RmsComputer>& computer) {
+    return database_->getComputerFromDB(computer);
+  }
+
+  inline bool insertComputerIntoDB(std::shared_ptr<RmsComputer>& computer) {
+    return database_->insertComputerIntoDB(computer);
   }
 
   /**

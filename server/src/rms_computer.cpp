@@ -10,10 +10,6 @@
 namespace rms {
 namespace server {
 
-/** create a blank computer i.e provision it on the database side and set the
- * id*/
-RmsComputer::RmsComputer() : computer_id_(-1) {}
-
 /** computer exists use computer_id to fetch the data*/
 RmsComputer::RmsComputer(const int computer_id) : computer_id_(computer_id) {
   // fetch info from db
@@ -22,35 +18,35 @@ RmsComputer::RmsComputer(const int computer_id) : computer_id_(computer_id) {
 // Setters
 void RmsComputer::setSysName(const char* name) {
   system_name_ = name;
-  if (transaction) transaction_computer_changed = true;
+  if (transaction_) transaction_computer_changed_ = true;
 }
 void RmsComputer::setHostName(const char* name) {
   host_name_ = name;
-  if (transaction) transaction_computer_changed = true;
+  if (transaction_) transaction_computer_changed_ = true;
 }
 
 void RmsComputer::setOSVersion(const rms::common::VersionData& ver) {
   os_version_ = ver;
-  if (transaction) transaction_computer_changed = true;
+  if (transaction_) transaction_computer_changed_ = true;
 }
 void RmsComputer::setClientVersion(const rms::common::VersionData& ver) {
   client_version_ = ver;
-  if (transaction) transaction_computer_changed = true;
+  if (transaction_) transaction_computer_changed_ = true;
 }
 
 void RmsComputer::setCpuName(const char* name) {
   cpu_name_ = name;
-  if (transaction) transaction_computer_changed = true;
+  if (transaction_) transaction_computer_changed_ = true;
 }
 void RmsComputer::setCpuVendor(const char* name) {
   cpu_vendor_ = name;
-  if (transaction) transaction_computer_changed = true;
+  if (transaction_) transaction_computer_changed_ = true;
 }
 
 void RmsComputer::setCpuInfo(const rms::common::CpuInfo& cpu) {
   cpu_core_count_ = cpu.cpu_cores_;
   cpu_cache_size_ = cpu.cache_size_;
-  if (transaction) transaction_computer_changed = true;
+  if (transaction_) transaction_computer_changed_ = true;
 }
 
 /**
@@ -72,7 +68,7 @@ void RmsComputer::addStorageDevice(const rms::common::StorageInfo& dev) {
     if (storage.dev_path_ == dev.dev_) {  // Found existing device
       if (computer_id_ != -1)
         ;  // Update DB
-      if (transaction) {
+      if (transaction_) {
         RmsStorageInfo info;
         StorageInfoToRmsStorageInfo(info, dev);
         transaction_storage_info_.emplace_back(std::move(info));
@@ -87,7 +83,7 @@ void RmsComputer::addStorageDevice(const rms::common::StorageInfo& dev) {
   RmsStorageInfo info;
   StorageInfoToRmsStorageInfo(info, dev);
 
-  if (transaction)
+  if (transaction_)
     transaction_storage_info_.emplace_back(std::move(info));
   else
     storage_info_.emplace_back(std::move(info));
@@ -189,6 +185,9 @@ std::string RmsComputer::toString() const {
   }
   return ss.str();
 }
+
+// Ends the transaction and pushes it to the db
+void RmsComputer::endTransaction() { transaction_ = false; }
 
 }  // namespace server
 }  // namespace rms

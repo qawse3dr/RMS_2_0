@@ -35,6 +35,7 @@ class RmsReporterClient {
   // TODO Create Work Queue
 
   RmsReporterClient();
+  ~RmsReporterClient() {}
 
  public:
   static RmsReporterClient* getInstance();

@@ -45,6 +45,7 @@ class CpuReporter : public Reporter<struct CpuUsageStats, 1> {
   CpuReporter(const CpuReporter&) = delete;
   CpuReporter(CpuReporter&&) = delete;
   CpuReporter(const int cpu_core_count);
+  virtual ~CpuReporter() = default;
 
   std::array<struct CpuUsageStats, 1> report() override;
 

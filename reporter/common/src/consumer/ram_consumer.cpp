@@ -42,7 +42,9 @@ void RamConsumer::consume() {
         RequestProtocol::kTCP, std::move(req));
 
     // TODO make config maybe this should be grabbed from the server
-    sleep(timeout_);
+    for (int i = 0; i < timeout_ && is_consuming_; i++) {
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
   }
 }
 

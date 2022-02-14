@@ -8,9 +8,8 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "rms/server/request_ingestor.h"
-
 #include "rms/common/util.h"
+#include "rms/server/ingestor/request_ingestor.h"
 
 namespace rms {
 namespace server {
@@ -26,6 +25,41 @@ void RequestIngestor::ingestRequest(const rms::common::Request& req,
   ingestRequestHeader(req.header);
   for (rms::common::RequestData data : req.data) {
     ingestRequestData(data, res, computer);
+
+    // Do general ingest stuff Make sure this is done after
+    // specific as they take priority
+    switch (data.type) {
+      case rms::common::RequestTypes::kSysHostName:
+        computer->setHostName(data.str_);
+        break;
+      case rms::common::RequestTypes::kSysName:
+        computer->setSysName(data.str_);
+        break;
+      case rms::common::RequestTypes::kCpuName:
+        computer->setCpuName(data.str_);
+        break;
+      case rms::common::RequestTypes::kCpuInfo:
+        computer->setCpuInfo(data.cpu_info);
+        break;
+      case rms::common::RequestTypes::kCpuVendorName:
+        computer->setCpuVendor(data.str_);
+        break;
+      case rms::common::RequestTypes::kSysUptime:
+        // Not Implemented.
+        break;
+      case rms::common::RequestTypes::kSysClientVersion:
+        computer->setClientVersion(data.version);
+        break;
+      case rms::common::RequestTypes::kSysOsVersion:
+        computer->setOSVersion(data.version);
+        break;
+      case rms::common::RequestTypes::kNetworkAdaptors:
+        computer->addNetworkDevice(data.network_info);
+        break;
+      case rms::common::RequestTypes::kSysStorage:
+        computer->addStorageDevice(data.storage_info);
+        break;
+    }
   }
 
   // Create Response data array

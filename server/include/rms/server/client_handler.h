@@ -15,7 +15,7 @@
 #include <thread>
 #include <vector>
 
-#include "rms/server/request_ingestor.h"
+#include "rms/server/ingestor/request_ingestor.h"
 
 #ifndef _SERVER_CLIENT_HANDLER_H_
 #define _SERVER_CLIENT_HANDLER_H_
