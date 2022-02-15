@@ -46,7 +46,7 @@ class RmsDatabase {
 
   explicit RmsDatabase(const RmsDatabaseTypes& type);
 
-  virtual RmsQueryResult executeQuery(const char* query, int row_length,
+  virtual RmsQueryResult executeQuery(const char* query,
                                       bool return_insert_id = false) = 0;
 
   void createTables();
@@ -70,6 +70,7 @@ class RmsDatabase {
 
 #define RMS_DB_CREATE_DATABASE "CREATE DATABASE rms_system_db;"
 
+#define RMS_DB_COMPUTER_TABLE_ROW_LENGTH 10
 #define RMS_DB_CREATE_COMPUTER_TABLE \
   "CREATE TABLE computer_table("     \
   "computer_id INTEGER NOT NULL,"    \
@@ -95,6 +96,8 @@ class RmsDatabase {
   "," RMS_DB_TYPE_FMT_INT "," RMS_DB_TYPE_FMT_INT "," RMS_DB_TYPE_FMT_STRING \
   ")"
 
+#define RMS_DB_FETCH_COMPUTER_BY_ID \
+  "SELECT * FROM computer_table WHERE computer_id = " RMS_DB_TYPE_FMT_INT
 #define RMS_DB_CREATE_STORAGE_TABLE       \
   "CREATE TABLE storage_table("           \
   "storage_info_id INTEGER NOT NULL,"     \

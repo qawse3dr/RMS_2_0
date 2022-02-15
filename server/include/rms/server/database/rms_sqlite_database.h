@@ -26,7 +26,7 @@ class RmsSqliteDatabase : public RmsDatabase {
   RmsSqliteDatabase();
   ~RmsSqliteDatabase();
 
-  RmsQueryResult executeQuery(const char* query, int row_length,
+  RmsQueryResult executeQuery(const char* query,
                               bool return_insert_id = false) override;
 };
 

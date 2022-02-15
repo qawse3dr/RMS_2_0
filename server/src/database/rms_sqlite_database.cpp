@@ -52,7 +52,7 @@ RmsSqliteDatabase::~RmsSqliteDatabase() {
 }
 
 RmsDatabase::RmsQueryResult RmsSqliteDatabase::executeQuery(
-    const char* query, int row_length, bool return_insert_id) {
+    const char* query, bool return_insert_id) {
   RmsQueryResult res;
   res.success = true;
 
@@ -64,34 +64,40 @@ RmsDatabase::RmsQueryResult RmsSqliteDatabase::executeQuery(
     std::cerr << "Failed to fetch data" << sqlite3_errmsg(db_) << std::endl;
     return res;
   }
+  int column_count = sqlite3_column_count(sql_res);
 
-  if (row_length == 0) {
+  if (column_count == 0) {
     sqlite3_step(sql_res);
     if (return_insert_id) res.last_id = sqlite3_last_insert_rowid(db_);
     sqlite3_finalize(sql_res);
     return res;
   }
-  // convert into rms QueryResult
+
+  ////// convert into rms QueryResult //////
 
   // first get column headers
-  for (int i = 0; i < row_length; i++) {
-    const unsigned char* text = sqlite3_column_text(sql_res, i);
-    res.column_names.emplace_back(reinterpret_cast<const char*>(text));
+  for (int i = 0; i < column_count; i++) {
+    const char* text = sqlite3_column_name(sql_res, i);
+    res.column_names.emplace_back(text);
   }
-  sqlite3_step(sql_res);
+  rc = sqlite3_step(sql_res);
   while (rc == SQLITE_ROW) {
     std::vector<std::string> row;
-    for (int i = 0; i < row_length; i++) {
+    for (int i = 0; i < column_count; i++) {
       const unsigned char* text = sqlite3_column_text(sql_res, i);
-      row.emplace_back(reinterpret_cast<const char*>(text));
+      if (text == nullptr) {
+        row.emplace_back("");
+      } else {
+        row.emplace_back(reinterpret_cast<const char*>(text));
+      }
     }
     res.table_rows.emplace_back(std::move(row));
-    sqlite3_step(sql_res);
+    rc = sqlite3_step(sql_res);
   }
-
   if (return_insert_id) res.last_id = sqlite3_last_insert_rowid(db_);
 
   sqlite3_finalize(sql_res);
+
   return res;
 }
 
