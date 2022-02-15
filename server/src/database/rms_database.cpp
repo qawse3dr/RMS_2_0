@@ -14,6 +14,7 @@
 
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include <tuple>
 
 #include "rms/server/database/rms_database.h"
@@ -28,16 +29,16 @@ void RmsDatabase::createTables() {
 
   // Create a way to do a transaction
   for (;;) {
-    res = executeQuery(RMS_DB_CREATE_COMPUTER_TABLE, 0);
+    res = executeQuery(RMS_DB_CREATE_COMPUTER_TABLE);
     if (!res.success) break;
 
-    res = executeQuery(RMS_DB_CREATE_STORAGE_TABLE, 0);
+    res = executeQuery(RMS_DB_CREATE_STORAGE_TABLE);
     if (!res.success) break;
 
-    res = executeQuery(RMS_DB_CREATE_NETWORK_INFO_TABLE, 0);
+    res = executeQuery(RMS_DB_CREATE_NETWORK_INFO_TABLE);
     if (!res.success) break;
 
-    res = executeQuery(RMS_DB_CREATE_NETWORK_IP_TABLE, 0);
+    res = executeQuery(RMS_DB_CREATE_NETWORK_IP_TABLE);
     if (!res.success) break;
     break;
   }
@@ -48,7 +49,59 @@ void RmsDatabase::createTables() {
   }
 }
 
-bool RmsDatabase::getComputerFromDB(std::shared_ptr<RmsComputer>& computer) {}
+bool RmsDatabase::getComputerFromDB(std::shared_ptr<RmsComputer>& computer) {
+  if (computer->getComputerId() == -1) {
+    // TODO add log here
+    std::cerr << "Computer id invalid not grabbing from db" << std::endl;
+    return false;
+  }
+  auto res = executeQuery(
+      fmt::format(RMS_DB_FETCH_COMPUTER_BY_ID, computer->getComputerId())
+          .c_str());
+  std::cout << "FINISHED QUERY" << std::endl;
+  if (res.success) {
+    rms::common::CpuInfo cpu_info;
+    for (int i = 0; i < res.column_names.size(); i++) {
+      if (res.column_names[i] == "system_name") {
+        computer->setSysName(res.table_rows[0][i].c_str());
+      } else if (res.column_names[i] == "host_name") {
+        computer->setHostName(res.table_rows[0][i].c_str());
+      } else if (res.column_names[i] == "os_version") {
+        std::stringstream stream(res.table_rows[0][i]);
+        char ch;
+        int major, minor, release;
+        stream >> major >> ch >> minor >> ch >> release;
+        computer->setOSVersion({static_cast<uint8_t>(major),
+                                static_cast<uint8_t>(minor),
+                                static_cast<uint8_t>(release)});
+      } else if (res.column_names[i] == "client_version") {
+        std::stringstream stream(res.table_rows[0][i]);
+        char ch;
+        int major, minor, release;
+        stream >> major >> ch >> minor >> ch >> release;
+        computer->setClientVersion({static_cast<uint8_t>(major),
+                                    static_cast<uint8_t>(minor),
+                                    static_cast<uint8_t>(release)});
+      } else if (res.column_names[i] == "cpu_name") {
+        computer->setCpuName(res.table_rows[0][i].c_str());
+      } else if (res.column_names[i] == "cpu_vendor") {
+        computer->setCpuVendor(res.table_rows[0][i].c_str());
+      } else if (res.column_names[i] == "cpu_core_count") {
+        cpu_info.cpu_cores_ = std::stol(res.table_rows[0][i]);
+      } else if (res.column_names[i] == "cpu_cache_size") {
+        cpu_info.cache_size_ = std::stol(res.table_rows[0][i]);
+      } else if (res.column_names[i] == "cpu_cache_size") {
+        // change to string
+        cpu_info.arch_ = rms::common::Architecture::kX86_64;
+      }
+    }
+    computer->setCpuInfo(cpu_info);
+  } else {
+    std::cerr << "Failed to get computer with id " << computer->getComputerId()
+              << " From database" << std::endl;
+  }
+  return res.success;
+}
 
 bool RmsDatabase::insertComputerIntoDB(std::shared_ptr<RmsComputer>& computer) {
   auto& os_version = computer->getOSVersion();
@@ -63,7 +116,7 @@ bool RmsDatabase::insertComputerIntoDB(std::shared_ptr<RmsComputer>& computer) {
                   computer->getCpuCoreCount(), computer->getCpuCacheSize(),
                   computer->getCpuArch())
           .c_str(),
-      0, true);
+      true);
   if (res.success) {
     computer->setComputerId(res.last_id);
   }
