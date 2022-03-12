@@ -15,9 +15,8 @@
 #include <string>
 #include <vector>
 
-#include "rms/common/common_data.h"
+#include "gen-cpp/RMS_types.h"
 #include "rms/common/rms_version_info.h"
-#include "rms/common/sys_info_data.h"
 
 namespace rms {
 namespace server {
@@ -58,8 +57,8 @@ class RmsComputer {
   int computer_id_;
   std::string system_name_;
   std::string host_name_;
-  struct rms::common::VersionData os_version_;
-  struct rms::common::VersionData client_version_;
+  common::thrift::VersionData os_version_;
+  common::thrift::VersionData client_version_;
   std::string cpu_name_;
   std::string cpu_vendor_;
   int cpu_core_count_;
@@ -71,7 +70,9 @@ class RmsComputer {
 
   // transaction
   bool transaction_ = false;
-  bool transaction_computer_changed_ = false;
+  bool transaction_cpu_changed_ = false;
+  bool transaction_names_changed_ = false;
+  bool transaction_versions_changed_ = false;
   std::vector<RmsStorageInfo> transaction_storage_info_;
   std::vector<RmsNetworkInfo> transaction_network_info_;
 
@@ -80,32 +81,32 @@ class RmsComputer {
   RmsComputer(const int computer_id);
 
   // Setters
-  void setSysName(const char* name);
+  void setSysName(const std::string& name);
   inline const std::string& getSysName() const { return system_name_; }
-  void setHostName(const char* name);
+  void setHostName(const std::string& name);
   inline const std::string& getHostName() const { return host_name_; }
 
-  void setOSVersion(const rms::common::VersionData& ver);
-  inline const rms::common::VersionData& getOSVersion() const {
+  void setOSVersion(const common::thrift::VersionData& ver);
+  inline const common::thrift::VersionData& getOSVersion() const {
     return os_version_;
   }
-  void setClientVersion(const rms::common::VersionData& ver);
-  inline const rms::common::VersionData& getClientVersion() const {
+  void setClientVersion(const common::thrift::VersionData& ver);
+  inline const common::thrift::VersionData& getClientVersion() const {
     return client_version_;
   }
 
-  void setCpuName(const char* name);
+  void setCpuName(const std::string& name);
   inline const std::string& getCpuName() const { return cpu_name_; }
-  void setCpuVendor(const char* name);
+  void setCpuVendor(const std::string& name);
   inline const std::string& getCpuVendor() const { return cpu_vendor_; }
 
-  void setCpuInfo(const rms::common::CpuInfo& cpu);
+  void setCpuInfo(const rms::common::thrift::CpuInfo& cpu);
   inline const int& getCpuCoreCount() const { return cpu_core_count_; }
   inline const int& getCpuCacheSize() const { return cpu_cache_size_; }
   inline const std::string& getCpuArch() const { return cpu_arch_; }
 
-  void addStorageDevice(const rms::common::StorageInfo& dev);
-  void addNetworkDevice(const rms::common::NetworkInfo& dev);
+  void addStorageDevice(const rms::common::thrift::StorageInfo& dev);
+  void addNetworkDevice(const rms::common::thrift::NetworkInfo& dev);
 
   inline void setComputerId(int id) { computer_id_ = id; }
   inline const int& getComputerId() const { return computer_id_; }

@@ -1,7 +1,6 @@
 #include <csignal>
 #include <iostream>
 
-#include "rms/common/request_data.h"
 #include "rms/common/rms_config.h"
 #include "rms/reporter/common/request_client.h"
 #include "rms/reporter/common/rms_reporter_client.h"

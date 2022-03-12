@@ -8,6 +8,8 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
+#include "rms/server/rms_server.h"
+
 #include <algorithm>
 #include <iostream>
 
@@ -15,7 +17,6 @@
 #include "rms/server/database/rms_sqlite_database.h"
 #include "rms/server/ingestor/request_db_ingestor.h"
 #include "rms/server/ingestor/request_log_ingestor.h"
-#include "rms/server/rms_server.h"
 #include "rms/server/rms_terminal.h"
 
 namespace rms {

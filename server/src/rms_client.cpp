@@ -15,7 +15,7 @@
 
 #include <iostream>
 
-#include "rms/common/request_data.h"
+#include "gen-cpp/RMS_types.h"
 #include "rms/common/util.h"
 #include "rms/server/rms_server.h"
 
@@ -36,19 +36,20 @@ void RmsClient::die() {
 
 void RmsClient::workloop() {
   while (started_) {
-    rms::common::Request req;
+    rms::common::thrift::RmsRequest req;
 
     // Reads header
-    if (read(connection_fd_, &req.header, sizeof(rms::common::RequestHeader)) ==
-        0) {
+    if (read(connection_fd_, &req.header,
+             sizeof(rms::common::thrift::RmsHeader)) == 0) {
       std::cerr << "\nConnection Dropped" << std::endl;
       die();
       break;
     }
 
-    rms::common::RequestData buffer[req.header.data_count];
+    rms::common::thrift::RmsRequestData buffer[req.header.data_count];
     if (read(connection_fd_, &buffer,
-             sizeof(rms::common::RequestData) * req.header.data_count) == 0) {
+             sizeof(rms::common::thrift::RmsRequestData) *
+                 req.header.data_count) == 0) {
       std::cerr << "\nConnection Dropped" << std::endl;
       die();
       break;
@@ -58,7 +59,7 @@ void RmsClient::workloop() {
     }
 
     // Create base response
-    struct rms::common::Response res;
+    struct rms::common::thrift::RmsResponse res;
     res.header.timestamp = rms::common::getTimestamp();
     res.header.data_count = 0;
 
@@ -106,7 +107,7 @@ int RmsClient::stop() {
  * ie if the rms_terminal asks to the sysinfo, it will add it to the queue
  * and when the next response it sent it will be sent with it
  */
-void RmsClient::addResponse(rms::common::ResponseData&& res_data) {
+void RmsClient::addResponse(rms::common::thrift::RmsResponseData&& res_data) {
   std::lock_guard<std::mutex> lk(response_mutex_);
   response_queue_.emplace(std::move(res_data));
 }

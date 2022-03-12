@@ -20,26 +20,12 @@ namespace rms {
 namespace reporter {
 
 /**
- * Holds CPU usage for master and per core usage
- */
-struct CpuUsageStats {
-  struct usage {
-    float total_;
-    float used_;
-  };
-  struct usage master_cpu_usage_;
-  std::shared_ptr<struct usage[]> cpu_core_usage_;
-  short cpu_core_count_;
-};
-
-/**
  *  Reporter that returns 2 ram usage status
  *  1 for main ram, 1 for swap
  */
-class CpuReporter : public Reporter<struct CpuUsageStats, 1> {
+class CpuReporter : public Reporter<rms::common::thrift::CpuUsageData> {
  private:
-  int cpu_core_count_;
-  struct CpuUsageStats stats;
+  const int cpu_core_count_;
 
  public:
   CpuReporter(const CpuReporter&) = delete;
@@ -47,7 +33,7 @@ class CpuReporter : public Reporter<struct CpuUsageStats, 1> {
   CpuReporter(const int cpu_core_count);
   virtual ~CpuReporter() = default;
 
-  std::array<struct CpuUsageStats, 1> report() override;
+  rms::common::thrift::CpuUsageData report() override;
 
   CpuReporter operator=(const CpuReporter&) = delete;
   CpuReporter&& operator=(CpuReporter&&) = delete;

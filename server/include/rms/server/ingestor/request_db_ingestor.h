@@ -22,9 +22,10 @@ class DbRequestIngestor : public RequestIngestor {
   std::unique_ptr<RmsDatabase> database_;
 
  protected:
-  void ingestRequestHeader(const rms::common::RequestHeader& header) override;
-  void ingestRequestData(const rms::common::RequestData& data,
-                         rms::common::Response&,
+  void ingestRequestHeader(
+      const rms::common::thrift::RmsHeader& header) override;
+  void ingestRequestData(const rms::common::thrift::RmsRequestData& data,
+                         rms::common::thrift::RmsResponse&,
                          std::shared_ptr<RmsComputer>& computer) override;
 
  public:

@@ -9,6 +9,8 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
+#include "rms/server/database/rms_database.h"
+
 #include <fmt/format.h>
 #include <sqlite3.h>
 
@@ -16,8 +18,6 @@
 #include <iostream>
 #include <sstream>
 #include <tuple>
-
-#include "rms/server/database/rms_database.h"
 
 namespace rms {
 namespace server {
@@ -60,7 +60,7 @@ bool RmsDatabase::getComputerFromDB(std::shared_ptr<RmsComputer>& computer) {
           .c_str());
   std::cout << "FINISHED QUERY" << std::endl;
   if (res.success) {
-    rms::common::CpuInfo cpu_info;
+    rms::common::thrift::CpuInfo cpu_info;
     for (int i = 0; i < res.column_names.size(); i++) {
       if (res.column_names[i] == "system_name") {
         computer->setSysName(res.table_rows[0][i].c_str());
@@ -71,28 +71,32 @@ bool RmsDatabase::getComputerFromDB(std::shared_ptr<RmsComputer>& computer) {
         char ch;
         int major, minor, release;
         stream >> major >> ch >> minor >> ch >> release;
-        computer->setOSVersion({static_cast<uint8_t>(major),
-                                static_cast<uint8_t>(minor),
-                                static_cast<uint8_t>(release)});
+        rms::common::thrift::VersionData os_verison;
+        os_verison.__set_major(major);
+        os_verison.__set_minor(minor);
+        os_verison.__set_release(release);
+        computer->setOSVersion(os_verison);
       } else if (res.column_names[i] == "client_version") {
         std::stringstream stream(res.table_rows[0][i]);
         char ch;
         int major, minor, release;
         stream >> major >> ch >> minor >> ch >> release;
-        computer->setClientVersion({static_cast<uint8_t>(major),
-                                    static_cast<uint8_t>(minor),
-                                    static_cast<uint8_t>(release)});
+        rms::common::thrift::VersionData client_version;
+        client_version.__set_major(major);
+        client_version.__set_minor(minor);
+        client_version.__set_release(release);
+        computer->setClientVersion(client_version);
       } else if (res.column_names[i] == "cpu_name") {
-        computer->setCpuName(res.table_rows[0][i].c_str());
+        computer->setCpuName(res.table_rows[0][i]);
       } else if (res.column_names[i] == "cpu_vendor") {
-        computer->setCpuVendor(res.table_rows[0][i].c_str());
+        computer->setCpuVendor(res.table_rows[0][i]);
       } else if (res.column_names[i] == "cpu_core_count") {
-        cpu_info.cpu_cores_ = std::stol(res.table_rows[0][i]);
+        cpu_info.cpu_cores = std::stol(res.table_rows[0][i]);
       } else if (res.column_names[i] == "cpu_cache_size") {
-        cpu_info.cache_size_ = std::stol(res.table_rows[0][i]);
+        cpu_info.cache_size = std::stol(res.table_rows[0][i]);
       } else if (res.column_names[i] == "cpu_cache_size") {
         // change to string
-        cpu_info.arch_ = rms::common::Architecture::kX86_64;
+        cpu_info.arch = rms::common::thrift::Architecture::kX86_64;
       }
     }
     computer->setCpuInfo(cpu_info);

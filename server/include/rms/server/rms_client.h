@@ -18,7 +18,7 @@
 #include <queue>
 #include <thread>
 
-#include "rms/common/response_data.h"
+#include "gen-cpp/RMS_types.h"
 #include "rms/server/rms_computer.h"
 
 namespace rms {
@@ -30,7 +30,7 @@ class RmsClient {
   int connection_fd_;
 
   // uses Response data so it can just be added to vector
-  std::queue<rms::common::ResponseData> response_queue_;
+  std::queue<common::thrift::RmsResponseData> response_queue_;
   std::mutex response_mutex_;
 
   std::atomic_bool started_;
@@ -68,7 +68,7 @@ class RmsClient {
    * ie if the rms_terminal asks to the sysinfo, it will add it to the queue
    * and when the next response it sent it will be sent with it
    */
-  void addResponse(rms::common::ResponseData&& res);
+  void addResponse(rms::common::thrift::RmsResponseData&& res);
 
   inline bool dead() { return dead_; }
   inline const int& getId() const { return computer_->getComputerId(); }

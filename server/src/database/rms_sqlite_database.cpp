@@ -9,6 +9,8 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
+#include "rms/server/database/rms_sqlite_database.h"
+
 #include <fmt/format.h>
 
 #include <filesystem>
@@ -16,7 +18,6 @@
 #include <utility>
 
 #include "rms/common/rms_config.h"
-#include "rms/server/database/rms_sqlite_database.h"
 
 namespace rms {
 namespace server {

@@ -15,7 +15,7 @@
 #include <memory>
 #include <vector>
 
-#include "rms/common/request_data.h"
+#include "gen-cpp/RMS_types.h"
 #include "rms/reporter/common/consumer/consumer.h"
 #include "rms/reporter/common/consumer/sys_consumer.h"
 #include "rms/reporter/common/request_client.h"

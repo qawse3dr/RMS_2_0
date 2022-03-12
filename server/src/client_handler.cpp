@@ -18,7 +18,7 @@
 #include <iostream>
 #include <memory>
 
-#include "rms/common/request_data.h"
+#include "gen-cpp/RMS_types.h"
 #include "rms/server/rms_client.h"
 #include "rms/server/rms_server.h"
 
