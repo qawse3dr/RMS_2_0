@@ -5,34 +5,39 @@
 namespace rms {
 namespace reporter {
 
-std::array<struct RamUsageStats, 2> RamReporter::report() {
+common::thrift::RamData RamReporter::report() {
   // Ram stats.
-  struct RamUsageStats ram_usage;
-  struct RamUsageStats swap_usage;
+  common::thrift::RamData ram_usage;
 
   FILE* proc_meminfo = fopen("/proc/meminfo", "r");
 
   if (proc_meminfo) {
-    fscanf(proc_meminfo, "MemTotal: %ld kB\n", &ram_usage.total_);
+    std::int64_t d;
+    fscanf(proc_meminfo, "MemTotal: %ld kB\n", &d);
+    ram_usage.__set_main_total(d);
     fscanf(
         proc_meminfo,
         "MemFree: %*ld kB\n");  // Ignore line This doesn't give correct value.
-    fscanf(proc_meminfo, "MemAvailable: %ld kB\n", &ram_usage.free_);
+    fscanf(proc_meminfo, "MemAvailable: %ld kB\n", &d);
+    ram_usage.__set_main_free(d);
 
     for (int i = 0; i < 11; i++) {
       while ((char)fgetc(proc_meminfo) != '\n')
         ;
     }
 
-    fscanf(proc_meminfo, "SwapTotal: %ld kB\n", &swap_usage.total_);
-    fscanf(proc_meminfo, "SwapFree: %ld kB\n", &swap_usage.free_);
+    fscanf(proc_meminfo, "SwapTotal: %ld kB\n", &d);
+    ram_usage.__set_swap_total(d);
+
+    fscanf(proc_meminfo, "SwapFree: %ld kB\n", &d);
+    ram_usage.__set_swap_free(d);
 
     fclose(proc_meminfo);
     // Returns calculated usage
-    return {ram_usage, swap_usage};
+    return ram_usage;
   }
   // Failed to open
-  return {-1, -1};
+  return {};
 }
 
 }  // namespace reporter

@@ -12,71 +12,66 @@
 #ifndef _SERVER_RMS_CLIENT_H_
 #define _SERVER_RMS_CLIENT_H_
 
+#include <thrift/transport/TSocket.h>
+
 #include <atomic>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <queue>
 #include <thread>
 
-#include "rms/common/response_data.h"
+#include "gen-cpp/RMS_types.h"
+#include "gen-cpp/RmsReporterService.h"
 #include "rms/server/rms_computer.h"
 
 namespace rms {
 namespace server {
 
-class RmsClient {
+class RmsClient : public rms::common::thrift::RmsReporterServiceIf {
  private:
   std::shared_ptr<RmsComputer> computer_ = nullptr;
   int connection_fd_;
 
   // uses Response data so it can just be added to vector
-  std::queue<rms::common::ResponseData> response_queue_;
+  std::queue<common::thrift::RmsResponseData> response_queue_;
   std::mutex response_mutex_;
 
-  std::atomic_bool started_;
-  std::atomic_bool dead_ = false;
-
-  std::thread work_thread_;
-
-  // work loop
-  void workloop();
-
-  /**
-   * @brief Kills the client and leaves it in a dead state.
-   * this is only really used for unexpected disconnects.
-   * it will also ping the RmsServer letting it know it has cleanup
-   * to do.
-   *
-   */
-  void die();
-
  public:
-  RmsClient(int fd);
-  ~RmsClient();
+  RmsClient() = default;
+  ~RmsClient() = default;
   /**
-   * starts work thread if its already started just ignore
+   * @brief does the handshake for a new computer
+   *
+   * @return i64 new id
    */
-  int start();
+  int64_t handshake(const int64_t id,
+                    const rms::common::thrift::SystemInfo& sys_info) override;
 
-  /**
-   * shuts down workthread
-   */
-  int stop();
+  void report(rms::common::thrift::RmsResponse& _return,
+              const rms::common::thrift::RmsRequest& request) override;
 
   /**
    * adds a response to the reponse queue
    * ie if the rms_terminal asks to the sysinfo, it will add it to the queue
    * and when the next response it sent it will be sent with it
    */
-  void addResponse(rms::common::ResponseData&& res);
-
-  inline bool dead() { return dead_; }
+  void addResponse(rms::common::thrift::RmsResponseData&& res);
   inline const int& getId() const { return computer_->getComputerId(); }
   inline const std::string& getName() const { return computer_->getHostName(); }
   inline std::string getComputerAsString() const {
     return computer_->toString();
   }
-  // TODO add ways to interface with computer_ maybe...
+};
+
+class RmsReporterServiceFactory
+    : virtual public rms::common::thrift::RmsReporterServiceIfFactory {
+ public:
+  ~RmsReporterServiceFactory() override = default;
+  rms::common::thrift::RmsReporterServiceIf* getHandler(
+      const ::apache::thrift::TConnectionInfo& connInfo) override;
+  void releaseHandler(
+      rms::common::thrift::RmsReporterServiceIf* client) override;
 };
 
 }  // namespace server

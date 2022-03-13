@@ -21,44 +21,18 @@ DbRequestIngestor::DbRequestIngestor()
     : RequestIngestor(RequestIngestorType::KdbIngestor), database_(nullptr) {}
 
 void DbRequestIngestor::ingestRequestHeader(
-    const rms::common::RequestHeader& header) {
+    const rms::common::thrift::RmsHeader& header) {
   std::cout << "Gets Header: " << header.data_count
             << "at: " << header.timestamp << std::endl;
   ;
 }
 
 void DbRequestIngestor::ingestRequestData(
-    const rms::common::RequestData& data, rms::common::Response& res,
+    const rms::common::thrift::RmsRequestData& data,
+    rms::common::thrift::RmsResponse& res,
     std::shared_ptr<RmsComputer>& computer) {
-  switch (data.type) {
-    case rms::common::RequestTypes::kHandshakeStart:
-      std::cout << "handshake started" << std::endl;
-      computer = std::make_shared<RmsComputer>(data.long_);
-
-      // If the computer is in the db grab it
-      if (computer->getComputerId() != -1) {
-        RmsServer::getInstance()->getComputerFromDB(computer);
-      }
-
-      // Start db transaction
-      computer->startTransaction();
-      break;
-    case rms::common::RequestTypes::kHandshakeEnd:
-      std::cout << "handshake ended" << std::endl;
-
-      // If the computer isn't in the db add it.
-      if (computer->getComputerId() == -1) {
-        RmsServer::getInstance()->insertComputerIntoDB(computer);
-      }
-      res.header.data_count += 1;
-      rms::common::ResponseData res_data;
-      res_data.type = rms::common::ResponseTypes::kHandShake;
-      res_data.long_ = computer->getComputerId();
-      // computer_id for log just return -1
-      res.data.emplace_back(std::move(res_data));
-
-      computer->endTransaction();
-      break;
+  switch (data.data_type) {
+   
   }
 }
 }  // namespace server

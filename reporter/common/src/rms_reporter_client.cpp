@@ -8,9 +8,10 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
+#include "rms/reporter/common/rms_reporter_client.h"
+
 #include "rms/reporter/common/consumer/cpu_consumer.h"
 #include "rms/reporter/common/consumer/ram_consumer.h"
-#include "rms/reporter/common/rms_reporter_client.h"
 
 namespace rms {
 namespace reporter {
@@ -34,12 +35,12 @@ RmsReporterClient::RmsReporterClient() {
 
   // Get base sysinfo
   rms::reporter::SysReporter sys_reporter;
-  auto sys_info = sys_reporter.report()[0];
+  auto sys_info = sys_reporter.report();
 
   sys_consumer_ = std::make_unique<rms::reporter::SysConsumer>();
 
   consumers_.emplace_back(std::make_unique<rms::reporter::CpuConsumer>(
-      static_cast<int>(sys_info.cpu_info_.cpu_cores_) * 2));
+      static_cast<int>(sys_info.cpu_info.cpu_cores) * 2));
   consumers_.emplace_back(std::make_unique<rms::reporter::RamConsumer>());
 }
 

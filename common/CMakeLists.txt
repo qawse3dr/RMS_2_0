@@ -1,8 +1,34 @@
 cmake_minimum_required(VERSION 3.10)
 
+
+add_custom_command(
+OUTPUT
+    ${CMAKE_BINARY_DIR}/gen-cpp/RMS_types.cpp
+    ${CMAKE_BINARY_DIR}/gen-cpp/RMS_types.h
+    ${CMAKE_BINARY_DIR}/gen-cpp/RmsReporterService.cpp
+    ${CMAKE_BINARY_DIR}/gen-cpp/RmsReporterService.h
+
+COMMAND
+    thrift --gen cpp ${CMAKE_CURRENT_SOURCE_DIR}/thrift/RMS.thrift
+WORKING_DIRECTORY
+    ${CMAKE_BINARY_DIR}
+ DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/thrift/RMS.thrift
+)
+
+add_library(rms_thrift STATIC
+  ${CMAKE_BINARY_DIR}/gen-cpp/RMS_types.cpp
+  ${CMAKE_BINARY_DIR}/gen-cpp/RmsReporterService.cpp
+)
+target_include_directories(rms_thrift 
+  PUBLIC ${CMAKE_BINARY_DIR}
+)
+
+target_link_libraries(rms_thrift thrift)
+
+
 set(SRC_FILES
     "src/util.cpp"
-    "src/sys_info_data.cpp"
     "src/rms_config.cpp"
   )
 
@@ -14,6 +40,7 @@ add_library(rms_common STATIC
     ${PLATFORM_SRC_FILES}
     )
 
+target_link_libraries(rms_common rms_thrift)
 IF (WIN32)
   # Add windows support here
 ELSE()
@@ -23,4 +50,5 @@ ENDIF()
     
 
 target_include_directories(rms_common 
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )

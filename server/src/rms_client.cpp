@@ -15,101 +15,80 @@
 
 #include <iostream>
 
-#include "rms/common/request_data.h"
+#include "gen-cpp/RMS_types.h"
 #include "rms/common/util.h"
 #include "rms/server/rms_server.h"
 
+using rms::common::thrift::RmsRequest;
+using rms::common::thrift::RmsResponse;
+using rms::common::thrift::SystemInfo;
+
 namespace rms {
 namespace server {
-
-RmsClient::RmsClient(int fd)
-    : computer_(nullptr), connection_fd_(fd), started_(false) {}
-
-RmsClient::~RmsClient() {
-  if (started_) stop();
-}
-
-void RmsClient::die() {
-  dead_ = true;
-  RmsServer::getInstance()->markClientsForCleanUp();
-}
-
-void RmsClient::workloop() {
-  while (started_) {
-    rms::common::Request req;
-
-    // Reads header
-    if (read(connection_fd_, &req.header, sizeof(rms::common::RequestHeader)) ==
-        0) {
-      std::cerr << "\nConnection Dropped" << std::endl;
-      die();
-      break;
-    }
-
-    rms::common::RequestData buffer[req.header.data_count];
-    if (read(connection_fd_, &buffer,
-             sizeof(rms::common::RequestData) * req.header.data_count) == 0) {
-      std::cerr << "\nConnection Dropped" << std::endl;
-      die();
-      break;
-    }
-    for (int i = 0; i < req.header.data_count; i++) {
-      req.data.emplace_back(std::move(buffer[i]));
-    }
-
-    // Create base response
-    struct rms::common::Response res;
-    res.header.timestamp = rms::common::getTimestamp();
-    res.header.data_count = 0;
-
-    response_mutex_.lock();
-    while (!response_queue_.empty()) {
-      res.header.data_count++;
-      res.data.emplace_back(std::move(response_queue_.front()));
-      response_queue_.pop();
-    }
-    response_mutex_.unlock();
-
-    // this should be serial
-    RmsServer::getInstance()->getIngestor()->ingestRequest(
-        req, std::move(res), connection_fd_, computer_);
-  }
-}
-/**
- * starts work thread if its already started just ignore
- */
-int RmsClient::start() {
-  if (started_) return 1;  // already started
-  started_ = true;
-  work_thread_ = std::thread(&RmsClient::workloop, this);
-  return 0;
-}
-
-/**
- * shuts down workthread
- */
-int RmsClient::stop() {
-  if (!started_) return 1;  // not started
-  started_ = false;
-
-  // shuts down to kill connection
-  // then close to clean up
-  shutdown(connection_fd_, SHUT_RDWR);
-  close(connection_fd_);
-
-  work_thread_.join();
-  return 0;
-}
 
 /**
  * adds a response to the reponse queue
  * ie if the rms_terminal asks to the sysinfo, it will add it to the queue
  * and when the next response it sent it will be sent with it
  */
-void RmsClient::addResponse(rms::common::ResponseData&& res_data) {
+void RmsClient::addResponse(rms::common::thrift::RmsResponseData&& res_data) {
   std::lock_guard<std::mutex> lk(response_mutex_);
   response_queue_.emplace(std::move(res_data));
 }
 
+int64_t RmsClient::handshake(const int64_t id,
+                             const rms::common::thrift::SystemInfo& sys_info) {
+  computer_ = std::make_shared<RmsComputer>(id);
+
+  if (id == -1) {
+    RmsServer::getInstance()->getComputerFromDB(computer_);
+    // todo update computer
+  } else {
+    computer_->setSysInfo(sys_info);
+    RmsServer::getInstance()->insertComputerIntoDB(computer_);
+  }
+  return computer_->getComputerId();
+}
+
+void RmsClient::report(RmsResponse& res, const RmsRequest& req) {
+  // Create base response
+  res.header.timestamp = rms::common::getTimestamp();
+  res.header.data_count = 0;
+
+  response_mutex_.lock();
+  while (!response_queue_.empty()) {
+    res.header.data_count++;
+    res.data.emplace_back(std::move(response_queue_.front()));
+    response_queue_.pop();
+  }
+  response_mutex_.unlock();
+
+  // this should be serial
+  RmsServer::getInstance()->getIngestor()->ingestRequest(req, res, computer_);
+}
+
+void RmsReporterServiceFactory::releaseHandler(
+    rms::common::thrift::RmsReporterServiceIf* client) {
+  RmsServer::getInstance()->removeClient(
+      static_cast<RmsClient*>(client)->getId());
+  delete client;
+}
+
+rms::common::thrift::RmsReporterServiceIf*
+RmsReporterServiceFactory::getHandler(
+    const ::apache::thrift::TConnectionInfo& connInfo) {
+  using namespace apache::thrift::transport;
+  std::shared_ptr<TSocket> sock =
+      std::dynamic_pointer_cast<TSocket>(connInfo.transport);
+  std::cout << "Incoming connection\n";
+  std::cout << "\tSocketInfo: " << sock->getSocketInfo() << "\n";
+  std::cout << "\tPeerHost: " << sock->getPeerHost() << "\n";
+  std::cout << "\tPeerAddress: " << sock->getPeerAddress() << "\n";
+  std::cout << "\tPeerPort: " << sock->getPeerPort() << "\n";
+
+  auto client = new RmsClient;
+  RmsServer::getInstance()->addClient(client);
+  return client;
+}
 }  // namespace server
 }  // namespace rms

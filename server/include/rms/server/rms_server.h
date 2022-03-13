@@ -40,7 +40,7 @@ class RmsServer {
   std::unique_ptr<ClientHandler> client_handler_;
   std::unique_ptr<RequestIngestor> ingestor_;
 
-  std::vector<std::shared_ptr<RmsClient>> clients_;
+  std::vector<RmsClient*> clients_;
   std::mutex client_mutex_;
 
   std::unique_ptr<RmsDatabase> database_ = nullptr;
@@ -53,7 +53,7 @@ class RmsServer {
    *
    * @return std::vector&
    */
-  std::vector<std::shared_ptr<RmsClient>>& getClients();
+  std::vector<RmsClient*>& getClients();
 
   // flag to let the server know there is a shared_ptr
   // of a client dangling around somewhere and it should
@@ -88,7 +88,7 @@ class RmsServer {
    * @return std::shared_ptr<RmsClient>  returns nullptr if client can't be
    * found
    */
-  std::shared_ptr<RmsClient> getClient(std::int32_t id);
+  RmsClient* getClient(std::int32_t id);
 
   /**
    * @brief marks client for cleanup meaning a dead pointer is somewhere
@@ -102,7 +102,7 @@ class RmsServer {
    *
    * @param client
    */
-  void addClient(const std::shared_ptr<RmsClient>& client);
+  void addClient(RmsClient* client);
   void removeClient(std::int32_t id);
 
   void printClients();

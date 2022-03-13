@@ -9,6 +9,8 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
+#include <thrift/server/TThreadedServer.h>
+
 #include <atomic>
 #include <memory>
 #include <queue>
@@ -28,9 +30,8 @@ class ClientHandler {
   std::thread accept_clients_thread_;
   std::atomic_bool running_;
 
-  // server tcp fd
-  int sock_fd_;
-
+  // Thrift Server
+  std::unique_ptr<apache::thrift::server::TThreadedServer> server_ = {};
   /**
    * Accepts new conenctions from client
    * taking in a new connection starting a new thread with that

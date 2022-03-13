@@ -1,7 +1,9 @@
 #ifndef _COMMON_INCLUDE_RMS_COMMON_HTTP_CLIENT_H_
 #define _COMMON_INCLUDE_RMS_COMMON_HTTP_CLIENT_H_
 
-#include <arpa/inet.h>
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/transport/TSocket.h>
+#include <thrift/transport/TTransportUtils.h>
 
 #include <atomic>
 #include <functional>
@@ -9,10 +11,9 @@
 #include <semaphore>
 #include <thread>
 
-#include "rms/common/request_data.h"
-#include "rms/common/response_data.h"
+#include "gen-cpp/RMS_types.h"
+#include "gen-cpp/RmsReporterService.h"
 
-using namespace rms::common;
 namespace rms {
 namespace reporter {
 
@@ -26,14 +27,18 @@ class RequestClient {
   std::atomic_bool poll_requests_;
   std::thread work_thread_;
 
-  std::queue<std::tuple<RequestProtocol, Request>> request_queue_;
+  std::queue<std::tuple<RequestProtocol, common::thrift::RmsRequest>>
+      request_queue_;
 
-// Tcp Request vars
-#include "rms/reporter/platform/request_client_vars.h"
+  // Thrift stuff
+  std::shared_ptr<apache::thrift::transport::TTransport> socket_ = {};
+  std::shared_ptr<apache::thrift::transport::TTransport> transport_ = {};
+  std::shared_ptr<apache::thrift::protocol::TProtocol> protocol_ = {};
+  std::unique_ptr<rms::common::thrift::RmsReporterServiceClient> client_ = {};
 
-  int sendHttpRequest(const Request& req);
-  int sendTcpRequest(const Request& req);
-  int sendLogRequest(const Request& req);
+  int sendHttpRequest(const common::thrift::RmsRequest& req);
+  int sendTcpRequest(const common::thrift::RmsRequest& req);
+  int sendLogRequest(const common::thrift::RmsRequest& req);
 
   /**
    * handles the response data from the server. ie
@@ -41,15 +46,10 @@ class RequestClient {
    * and deal with it later.
    *
    **/
-  int handleResponseData(const ResponseData& res_data, int tcp_fd);
+  int handleResponseData(const common::thrift::RmsResponseData& res_data);
 
   // Work thread.
   void pollRequests();
-  /*
-   * Setup the TCP connection with the config and calls handshake to finish the
-   * the setup for the client
-   */
-  int setupTCP();
 
   /**
    * Hand shakes with the server either giving the computer_id from the config
@@ -70,7 +70,8 @@ class RequestClient {
    * Sends a request with a given protocal currently only kLog and kTCP are
    *supported if need be http might be added in the future
    **/
-  void sendRequest(const RequestProtocol& type, Request&& req);
+  void sendRequest(const RequestProtocol& type,
+                   common::thrift::RmsRequest&& req);
 
   // Controls request_client
   void start();

@@ -1,11 +1,11 @@
+#include "rms/server/rms_computer.h"
+
 #include <arpa/inet.h>
 
 #include <cstring>
 #include <iostream>
 #include <sstream>
 #include <tuple>
-
-#include "rms/server/rms_computer.h"
 
 namespace rms {
 namespace server {
@@ -16,37 +16,39 @@ RmsComputer::RmsComputer(const int computer_id) : computer_id_(computer_id) {
 }
 
 // Setters
-void RmsComputer::setSysName(const char* name) {
+void RmsComputer::setSysName(const std::string& name) {
   system_name_ = name;
-  if (transaction_) transaction_computer_changed_ = true;
+  if (transaction_) transaction_names_changed_ = true;
 }
-void RmsComputer::setHostName(const char* name) {
+void RmsComputer::setHostName(const std::string& name) {
   host_name_ = name;
-  if (transaction_) transaction_computer_changed_ = true;
+  if (transaction_) transaction_names_changed_ = true;
 }
 
-void RmsComputer::setOSVersion(const rms::common::VersionData& ver) {
+void RmsComputer::setOSVersion(const rms::common::thrift::VersionData& ver) {
   os_version_ = ver;
-  if (transaction_) transaction_computer_changed_ = true;
+  if (transaction_) transaction_versions_changed_ = true;
 }
-void RmsComputer::setClientVersion(const rms::common::VersionData& ver) {
+void RmsComputer::setClientVersion(
+    const rms::common::thrift::VersionData& ver) {
   client_version_ = ver;
-  if (transaction_) transaction_computer_changed_ = true;
+  if (transaction_) transaction_versions_changed_ = true;
 }
 
-void RmsComputer::setCpuName(const char* name) {
+void RmsComputer::setCpuName(const std::string& name) {
   cpu_name_ = name;
-  if (transaction_) transaction_computer_changed_ = true;
+  if (transaction_) transaction_cpu_changed_ = true;
 }
-void RmsComputer::setCpuVendor(const char* name) {
+void RmsComputer::setCpuVendor(const std::string& name) {
   cpu_vendor_ = name;
-  if (transaction_) transaction_computer_changed_ = true;
+  if (transaction_) transaction_cpu_changed_ = true;
 }
 
-void RmsComputer::setCpuInfo(const rms::common::CpuInfo& cpu) {
-  cpu_core_count_ = cpu.cpu_cores_;
-  cpu_cache_size_ = cpu.cache_size_;
-  if (transaction_) transaction_computer_changed_ = true;
+void RmsComputer::setCpuInfo(const rms::common::thrift::CpuInfo& cpu) {
+  cpu_core_count_ = cpu.cpu_cores;
+  cpu_cache_size_ = cpu.cache_size;
+  cpu_arch_ = cpu.arch;
+  if (transaction_) transaction_cpu_changed_ = true;
 }
 
 /**
@@ -54,18 +56,19 @@ void RmsComputer::setCpuInfo(const rms::common::CpuInfo& cpu) {
  */
 static void StorageInfoToRmsStorageInfo(
     RmsStorageInfo& rms_storage_info,
-    const rms::common::StorageInfo& storage_info) {
-  rms_storage_info.dev_path_ = storage_info.dev_;
-  rms_storage_info.fs_type_ = storage_info.fs_type_;
-  rms_storage_info.free_ = storage_info.free_;
-  rms_storage_info.total_ = storage_info.total_;
+    const rms::common::thrift::StorageInfo& storage_info) {
+  rms_storage_info.dev_path_ = storage_info.dev;
+  rms_storage_info.fs_type_ = storage_info.fs_type;
+  rms_storage_info.free_ = storage_info.free;
+  rms_storage_info.total_ = storage_info.total;
   rms_storage_info.connected_ = true;
 }
 
-void RmsComputer::addStorageDevice(const rms::common::StorageInfo& dev) {
+void RmsComputer::addStorageDevice(
+    const rms::common::thrift::StorageInfo& dev) {
   // Check if the storage Device exists if it does update it and return
   for (auto& storage : storage_info_) {
-    if (storage.dev_path_ == dev.dev_) {  // Found existing device
+    if (storage.dev_path_ == dev.dev) {  // Found existing device
       if (computer_id_ != -1)
         ;  // Update DB
       if (transaction_) {
@@ -91,27 +94,15 @@ void RmsComputer::addStorageDevice(const rms::common::StorageInfo& dev) {
 
 static void NetworkDeviceToRmsNetworkDevice(
     RmsNetworkInfo& rms_network_info,
-    const rms::common::NetworkInfo& network_info) {
-  rms_network_info.interface_name_ = network_info.interface_name_;
+    const rms::common::thrift::NetworkInfo& network_info) {
+  rms_network_info.interface_name_ = network_info.interface_name;
   rms_network_info.connected_ = true;
 
   // Converts Ip to string
   RmsNetworkIPS rms_ip;
-  rms_ip.ipv6_ = network_info.is_ipv6_;
-  char IP_name[INET6_ADDRSTRLEN];
-  struct in6_addr ipv6_addr;
-  struct in_addr ip_addr;
-  if (network_info.is_ipv6_) {
-    ipv6_addr.__in6_u.__u6_addr32[0] = network_info.ipv6[0];
-    ipv6_addr.__in6_u.__u6_addr32[1] = network_info.ipv6[1];
-    ipv6_addr.__in6_u.__u6_addr32[2] = network_info.ipv6[2];
-    ipv6_addr.__in6_u.__u6_addr32[3] = network_info.ipv6[3];
-    inet_ntop(AF_INET6, &ipv6_addr, IP_name, INET6_ADDRSTRLEN);
-  } else {
-    ip_addr.s_addr = network_info.ip;
-    inet_ntop(AF_INET, &ip_addr, IP_name, INET6_ADDRSTRLEN);
-  }
-  rms_ip.ip = IP_name;
+  rms_ip.ipv6_ = network_info.is_ipv6;
+
+  rms_ip.ip = network_info.ip;
   // look for ip if it exists return
   for (auto& ip : rms_network_info.ips_) {
     if (ip.ip == rms_ip.ip) {
@@ -121,11 +112,12 @@ static void NetworkDeviceToRmsNetworkDevice(
   // add it ip cause it wasn't found
   rms_network_info.ips_.emplace_back(std::move(rms_ip));
 }
-void RmsComputer::addNetworkDevice(const rms::common::NetworkInfo& dev) {
+void RmsComputer::addNetworkDevice(
+    const rms::common::thrift::NetworkInfo& dev) {
   // Check if the storage Device exists if it does update it and return
   for (auto& network : network_info_) {
     if (network.interface_name_ ==
-        dev.interface_name_) {  // Found existing device
+        dev.interface_name) {  // Found existing device
       if (computer_id_ != -1)
         ;  // Update DB
       NetworkDeviceToRmsNetworkDevice(network, dev);
@@ -148,7 +140,21 @@ void RmsComputer::addToDB() {
   // add to db
   computer_id_ = 1;
 }
-
+void RmsComputer::setSysInfo(const rms::common::thrift::SystemInfo& sys_info) {
+  setHostName(sys_info.host_name);
+  setSysName(sys_info.system_name);
+  setCpuName(sys_info.cpu_name);
+  setCpuInfo(sys_info.cpu_info);
+  setCpuVendor(sys_info.cpu_vendor_name);
+  setClientVersion(sys_info.client_version);
+  setOSVersion(sys_info.os_version);
+  for (const auto& network_device : sys_info.network_info) {
+    addNetworkDevice(network_device);
+  }
+  for (const auto& storage_device : sys_info.storage_info) {
+    addStorageDevice(storage_device);
+  }
+}
 std::string RmsComputer::toString() const {
   std::stringstream ss;
 

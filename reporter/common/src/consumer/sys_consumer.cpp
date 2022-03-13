@@ -8,21 +8,31 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "rms/common/sys_info_data.h"
-#include "rms/common/util.h"
 #include "rms/reporter/common/consumer/sys_consumer.h"
+
+#include "rms/common/util.h"
 #include "rms/reporter/common/rms_reporter_client.h"
 
 namespace rms {
 namespace reporter {
 
+using rms::common::thrift::RmsRequest;
+using rms::common::thrift::RmsRequestTypes;
+using rms::common::thrift::SystemInfo;
+
 SysConsumer::SysConsumer() : Consumer(std::make_unique<SysReporter>()){};
 
 void SysConsumer::consume() {
   while (is_consuming_) {
-    auto usage = reporter_->report();
+    rms::common::thrift::RmsRequest req;
+    rms::common::thrift::RmsRequestData req_data;
 
-    auto req = rms::common::SysInfoToRequest(usage[0]);
+    req_data.data.__set_sys_info(reporter_->report());
+    // Set Request
+    req.header.data_count = 1;
+    req.header.timestamp = common::getTimestamp();
+    req.data.emplace_back(std::move(req_data));
+
     // Send request
     RmsReporterClient::getInstance()->getRequestClient().sendRequest(
         RequestProtocol::kTCP, std::move(req));

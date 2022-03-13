@@ -11,41 +11,74 @@
 
 #include "rms/reporter/platform/reporter/cpu_reporter.h"
 
+#include <array>
+#include <chrono>
 #include <iostream>
 #include <memory>
+#include <thread>
 
 namespace rms {
 namespace reporter {
 
-CpuReporter::CpuReporter(int cpu_core_count) {
-  stats.cpu_core_usage_ = std::shared_ptr<CpuUsageStats::usage[]>(
-      new CpuUsageStats::usage[cpu_core_count]);
-  stats.master_cpu_usage_ = {0, 0};
-  stats.cpu_core_count_ = cpu_core_count;
-}
+CpuReporter::CpuReporter(int cpu_core_count)
+    : cpu_core_count_(cpu_core_count) {}
 
-std::array<struct CpuUsageStats, 1> CpuReporter::report() {
+rms::common::thrift::CpuUsageData CpuReporter::report() {
   long user, nice, system, idle, iowait, irq, softirq;
-  int cpu_num;
+
+  // used to get baseline
+  int64_t baseline_total[cpu_core_count_ + 1];
+  int64_t baseline_used[cpu_core_count_ + 1];
+
+  // used to get total
+  int64_t total;
+  int64_t used;
+
+  rms::common::thrift::CpuUsageData data;
+  data.__set_core_count(cpu_core_count_);
 
   FILE* fp = fopen("/proc/stat", "r");
 
+  // baseline
   fscanf(fp, "cpu %ld %ld %ld %ld %ld %ld %ld %*ld %*ld %*ld\n", &user, &nice,
          &system, &idle, &iowait, &irq, &softirq);
-  stats.master_cpu_usage_.total_ =
-      user + nice + system + idle + iowait + irq + softirq;
-  stats.master_cpu_usage_.used_ = user + nice + system;
+  baseline_total[0] = user + nice + system + idle + iowait + irq + softirq;
+  baseline_used[0] = user + nice + system;
 
-  for (int i = 0; i < stats.cpu_core_count_; i++) {
-    fscanf(fp, "cpu%d %ld %ld %ld %ld %ld %ld %ld %*ld %*ld %*ld\n", &cpu_num,
-           &user, &nice, &system, &idle, &iowait, &irq, &softirq);
-    stats.cpu_core_usage_[cpu_num].total_ =
-        user + nice + system + idle + iowait + irq + softirq;
-    stats.cpu_core_usage_[cpu_num].used_ = user + nice + system;
+  for (int i = 1; i <= cpu_core_count_; i++) {
+    fscanf(fp, "cpu%*d %ld %ld %ld %ld %ld %ld %ld %*ld %*ld %*ld\n", &user,
+           &nice, &system, &idle, &iowait, &irq, &softirq);
+    baseline_total[i] = user + nice + system + idle + iowait + irq + softirq;
+    baseline_used[i] = user + nice + system;
   }
+
   fclose(fp);
 
-  return {stats};
+  // sleep so stats change
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+  // res
+  fp = fopen("/proc/stat", "r");
+
+  fscanf(fp, "cpu %ld %ld %ld %ld %ld %ld %ld %*ld %*ld %*ld\n", &user, &nice,
+         &system, &idle, &iowait, &irq, &softirq);
+  total = user + nice + system + idle + iowait + irq + softirq;
+  used = user + nice + system;
+  data.usage.push_back(100.0f * (used - baseline_used[0]) /
+                       (total - baseline_total[0]));
+
+  for (int i = 0; i < cpu_core_count_; i++) {
+    fscanf(fp, "cpu%*d %ld %ld %ld %ld %ld %ld %ld %*ld %*ld %*ld\n", &user,
+           &nice, &system, &idle, &iowait, &irq, &softirq);
+    total = user + nice + system + idle + iowait + irq + softirq;
+    used = user + nice + system;
+    data.usage.push_back(100.0f * (used - baseline_used[i]) /
+                         (total - baseline_total[i]));
+  }
+
+  fclose(fp);
+
+  return data;
 }
 
 }  // namespace reporter

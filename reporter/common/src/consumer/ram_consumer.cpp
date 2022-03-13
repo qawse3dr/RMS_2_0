@@ -1,10 +1,11 @@
+#include "rms/reporter/common/consumer/ram_consumer.h"
+
 #include <unistd.h>
 
 #include <iostream>
 
 #include "rms/common/rms_config.h"
 #include "rms/common/util.h"
-#include "rms/reporter/common/consumer/ram_consumer.h"
 #include "rms/reporter/common/rms_reporter_client.h"
 
 namespace rms {
@@ -17,25 +18,18 @@ RamConsumer::RamConsumer() : Consumer(std::make_unique<RamReporter>()) {
 
 void RamConsumer::consume() {
   while (is_consuming_) {
-    auto usage = reporter_->report();
+    rms::common::thrift::RmsRequest req;
+    rms::common::thrift::RmsRequestData req_data;
 
-    common::Request req;
-    rms::common::RequestData ram_usage, swap_usage;
+    req_data.__set_data_type(rms::common::thrift::RmsRequestTypes::kRamUsage);
+    req_data.data.__set_ram_data(reporter_->report());
 
     // Set Header
-    req.header.data_count = usage.size();
+    req.header.data_count = 1;
     req.header.timestamp = common::getTimestamp();
 
-    // Set Data
-    ram_usage.type = swap_usage.type = common::RequestTypes::kRamUsage;
-    ram_usage.ram_data = {false, usage[0].total_, usage[0].free_};
-    req.data.emplace_back(std::move(ram_usage));
-
-    // Only place swap if given
-    if (usage.size() == 2) {
-      swap_usage.ram_data = {true, usage[1].total_, usage[1].free_};
-      req.data.emplace_back(std::move(swap_usage));
-    }
+    // place usage in request
+    req.data.emplace_back(std::move(req_data));
 
     // Send request
     RmsReporterClient::getInstance()->getRequestClient().sendRequest(

@@ -11,8 +11,7 @@
 
 #include <memory>
 
-#include "rms/common/request_data.h"
-#include "rms/common/response_data.h"
+#include "gen-cpp/RMS_types.h"
 #include "rms/server/rms_client.h"
 
 #ifndef _INCLUDE_SERVER_INGESTOR_SERVER_H_
@@ -42,18 +41,18 @@ class RequestIngestor {
   // req data and req header
  protected:
   virtual void ingestRequestHeader(
-      const rms::common::RequestHeader& header) = 0;
-  virtual void ingestRequestData(const common::RequestData& data,
-                                 common::Response&,
+      const rms::common::thrift::RmsHeader& header) = 0;
+  virtual void ingestRequestData(const common::thrift::RmsRequestData& data,
+                                 common::thrift::RmsResponse&,
                                  std::shared_ptr<RmsComputer>& computer) = 0;
 
  public:
   RequestIngestor(RequestIngestorType type);
 
-  void ingestRequest(const rms::common::Request& req,
-                     rms::common::Response&& res, int fd,
+  void ingestRequest(const rms::common::thrift::RmsRequest& req,
+                     rms::common::thrift::RmsResponse& res,
                      std::shared_ptr<RmsComputer>& computer);
-  void queueRequest(rms::common::Request&& req);
+  void queueRequest(rms::common::thrift::RmsRequest&& req);
   void processRequest();
 
   // Gets the ingestor type this should not be changed anywhere

@@ -5,10 +5,12 @@
 
 #include <array>
 
+#include "gen-cpp/RMS_types.h"
+
 namespace rms {
 namespace reporter {
 
-template <class T, std::size_t N>
+template <class T>
 class Reporter {
  public:
   Reporter(const Reporter&) = delete;
@@ -16,7 +18,7 @@ class Reporter {
   Reporter() = default;
   virtual ~Reporter() {}
 
-  virtual std::array<T, N> report() = 0;
+  virtual T report() = 0;
 
   Reporter& operator=(const Reporter&) = delete;
   Reporter&& operator=(Reporter&&) = delete;
