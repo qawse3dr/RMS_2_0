@@ -50,7 +50,7 @@ class RequestIngestor {
   RequestIngestor(RequestIngestorType type);
 
   void ingestRequest(const rms::common::thrift::RmsRequest& req,
-                     rms::common::thrift::RmsResponse&& res, int fd,
+                     rms::common::thrift::RmsResponse& res,
                      std::shared_ptr<RmsComputer>& computer);
   void queueRequest(rms::common::thrift::RmsRequest&& req);
   void processRequest();

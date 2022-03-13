@@ -81,9 +81,9 @@ std::vector<int> RmsServer::getClientsIdList() {
   return clients_id;
 }
 
-std::shared_ptr<RmsClient> RmsServer::getClient(std::int32_t id) {
+RmsClient* RmsServer::getClient(std::int32_t id) {
   std::lock_guard<std::mutex> lk(client_mutex_);
-  for (auto& client : getClients()) {
+  for (auto* client : getClients()) {
     if (client->getId() == id) {
       return client;
     }
@@ -91,7 +91,7 @@ std::shared_ptr<RmsClient> RmsServer::getClient(std::int32_t id) {
   return nullptr;
 }
 
-void RmsServer::addClient(const std::shared_ptr<RmsClient>& client) {
+void RmsServer::addClient(RmsClient* client) {
   client_mutex_.lock();
   getClients().push_back(client);
   client_mutex_.unlock();
@@ -101,12 +101,11 @@ void RmsServer::removeClient(std::int32_t id) {
 
   auto& clients = getClients();
   // remove client based on its id
-  clients.erase(
-      std::remove_if(clients.begin(), clients.end(),
-                     [&id](const std::shared_ptr<RmsClient>& client) -> bool {
-                       return client->getId() == id;
-                     }),
-      clients.end());
+  clients.erase(std::remove_if(clients.begin(), clients.end(),
+                               [&id](const RmsClient* client) -> bool {
+                                 return client->getId() == id;
+                               }),
+                clients.end());
 }
 
 // Cleans up the pointer data
@@ -117,37 +116,18 @@ void RmsServer::cleanUp() {
   }
 }
 
-void RmsServer::removeDeadClients() {
-  // Assume this is already locked as everyone should
-  // be using the locking mutex and if it isn't
-  // whatever is about to happen is already UB anyways
-
-  // remove client based on its id
-  clients_.erase(
-      std::remove_if(clients_.begin(), clients_.end(),
-                     [](const std::shared_ptr<RmsClient>& client) -> bool {
-                       return client->dead();
-                     }),
-      clients_.end());
-  client_cleanup_ = false;
-}
 int RmsServer::clientsConnected() {
   std::lock_guard<std::mutex> lk(client_mutex_);
   return getClients().size();
 }
 
-std::vector<std::shared_ptr<RmsClient>>& RmsServer::getClients() {
-  if (client_cleanup_) removeDeadClients();
-  return clients_;
-}
+std::vector<RmsClient*>& RmsServer::getClients() { return clients_; }
 
 void RmsServer::printClients() {
-  const auto& clients = getClients();
-
   // HEADER
   std::cout << " ID    NAME" << std::endl;
   std::cout << "----  ------" << std::endl;
-  for (auto& client : clients) {
+  for (auto* client : clients_) {
     printf("%3d   %s\n", client->getId(), client->getName().c_str());
   }
 }

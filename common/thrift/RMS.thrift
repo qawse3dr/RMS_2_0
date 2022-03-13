@@ -71,8 +71,7 @@ struct RamData {
 enum RmsResponseTypes {
   kSendSystemInfo = 0,
   kRunCommand,
-  kRunScript,
-  kHandShake
+  kRunScript
 }
 
 
@@ -148,10 +147,6 @@ enum RmsRequestTypes {
   // System Info
   kSystemInfo,
 
-  // Control packages
-  kHandshakeStart = 600,  // long
-  kHandshakeEnd,          // empty
-
   kUnknown = 1000,
 }
 
@@ -184,7 +179,7 @@ service RmsReporterService {
   /**
    * creates the computer in the server
    */
-  i64 handshake(1: i64 id),
+  i64 handshake(1: i64 id, 2: SystemInfo sys_info),
 
   /**
    * Reports info to the server and gives back
@@ -192,10 +187,5 @@ service RmsReporterService {
    */
   RmsResponse report(1:RmsRequest request),
 
-  // Removes computer from the server cleanly
-  // if this isnt called before disconnect and
-  // conneciton is dropped it will be removed
-  // later
-  oneway void disconnect(1: i64 id)
 
 }

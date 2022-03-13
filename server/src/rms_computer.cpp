@@ -101,19 +101,7 @@ static void NetworkDeviceToRmsNetworkDevice(
   // Converts Ip to string
   RmsNetworkIPS rms_ip;
   rms_ip.ipv6_ = network_info.is_ipv6;
-  char IP_name[INET6_ADDRSTRLEN];
-  struct in6_addr ipv6_addr;
-  struct in_addr ip_addr;
-  // if (network_info.is_ipv6) {
-  //   // ipv6_addr.__in6_u.__u6_addr32[0] = network_info.ipv6[0];
-  //   // ipv6_addr.__in6_u.__u6_addr32[1] = network_info.ipv6[1];
-  //   // ipv6_addr.__in6_u.__u6_addr32[2] = network_info.ipv6[2];
-  //   // ipv6_addr.__in6_u.__u6_addr32[3] = network_info.ipv6[3];
-  //   inet_ntop(AF_INET6, &ipv6_addr, IP_name, INET6_ADDRSTRLEN);
-  // } else {
-  //   ip_addr.s_addr = network_info.ip;
-  //   inet_ntop(AF_INET, &ip_addr, IP_name, INET6_ADDRSTRLEN);
-  // }
+
   rms_ip.ip = network_info.ip;
   // look for ip if it exists return
   for (auto& ip : rms_network_info.ips_) {
@@ -152,7 +140,21 @@ void RmsComputer::addToDB() {
   // add to db
   computer_id_ = 1;
 }
-
+void RmsComputer::setSysInfo(const rms::common::thrift::SystemInfo& sys_info) {
+  setHostName(sys_info.host_name);
+  setSysName(sys_info.system_name);
+  setCpuName(sys_info.cpu_name);
+  setCpuInfo(sys_info.cpu_info);
+  setCpuVendor(sys_info.cpu_vendor_name);
+  setClientVersion(sys_info.client_version);
+  setOSVersion(sys_info.os_version);
+  for (const auto& network_device : sys_info.network_info) {
+    addNetworkDevice(network_device);
+  }
+  for (const auto& storage_device : sys_info.storage_info) {
+    addStorageDevice(storage_device);
+  }
+}
 std::string RmsComputer::toString() const {
   std::stringstream ss;
 

@@ -113,6 +113,8 @@ class RmsComputer {
 
   inline void startTransaction() { transaction_ = true; };
 
+  void setSysInfo(const rms::common::thrift::SystemInfo& sys_info);
+
   // Ends the transaction and pushes it to the db
   void endTransaction();
 

@@ -36,8 +36,14 @@ struct common::thrift::SystemInfo SysReporter::report() {
   struct common::thrift::StorageInfo storage_info;
   char mount_point[128], fs_type[128];
   FILE* fp = fopen("/proc/mounts", "r");
-  while (EOF != fscanf(fp, "%s %s %s %*s 0 0\n", storage_info.dev, mount_point,
-                       storage_info.fs_type)) {
+
+  char dev_buffer[128];
+  char fs_type_buffer[128];
+
+  while (EOF != fscanf(fp, "%s %s %s %*s 0 0\n", dev_buffer, mount_point,
+                       fs_type_buffer)) {
+    storage_info.dev = dev_buffer;
+    storage_info.fs_type = fs_type_buffer;
     if (storage_info.dev[0] != '/') continue;
     // Get stats from mount_point
     struct statfs info;
@@ -63,22 +69,14 @@ struct common::thrift::SystemInfo SysReporter::report() {
         next->ifa_addr->sa_family != AF_INET6)
       continue;
 
-    // IPv6 and IPv4 are stored differently so use a union to
-    // sort between the 2
-    if (next->ifa_addr->sa_family == AF_INET6) {
-      network_info.is_ipv6 = true;
-      network_info.ip;
-
-    } else {
-      network_info.is_ipv6 = false;
-      network_info.ip;
-    }
+    network_info.is_ipv6 = (next->ifa_addr->sa_family == AF_INET6);
+    network_info.ip =
+        inet_ntoa(((struct sockaddr_in*)ifap->ifa_addr)->sin_addr);
 
     // interface name
     network_info.interface_name = next->ifa_name;
 
     sys_info.network_info.emplace_back(network_info);
-
   } while (next = next->ifa_next);
   freeifaddrs(ifap);
 
@@ -88,7 +86,9 @@ struct common::thrift::SystemInfo SysReporter::report() {
     while ((char)fgetc(fp) != '\n')
       ;
   }
-  fscanf(fp, "vendor_id : %s", sys_info.cpu_vendor_name);
+  char buffer[128];
+  fscanf(fp, "vendor_id : %s", buffer);
+  sys_info.cpu_vendor_name = buffer;
   for (int i = 0; i < 3; i++) {
     while ((char)fgetc(fp) != '\n')
       ;
@@ -97,9 +97,14 @@ struct common::thrift::SystemInfo SysReporter::report() {
   /** Gets model name if it gets trunk skip to next line
    * else remove the newline at the end of the string
    */
+
   fscanf(fp, "model name : ");
 
-  sys_info.cpu_name;
+  sys_info.cpu_name = "";
+  char ch;
+  while ((ch = fgetc(fp)) != '\n') {
+    sys_info.cpu_name += ch;
+  }
 
   for (int i = 0; i < 3; i++) {
     while ((char)fgetc(fp) != '\n')
