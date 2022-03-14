@@ -55,68 +55,34 @@ class RmsComputer {
  private:
   // Computer table
   int computer_id_;
-  std::string system_name_;
-  std::string host_name_;
-  common::thrift::VersionData os_version_;
-  common::thrift::VersionData client_version_;
-  std::string cpu_name_;
-  std::string cpu_vendor_;
-  int cpu_core_count_;
-  int cpu_cache_size_;
-  std::string cpu_arch_;
 
+  rms::common::thrift::SystemInfo sys_info_;
   std::vector<RmsStorageInfo> storage_info_;
   std::vector<RmsNetworkInfo> network_info_;
 
-  // transaction
-  bool transaction_ = false;
-  bool transaction_cpu_changed_ = false;
-  bool transaction_names_changed_ = false;
-  bool transaction_versions_changed_ = false;
-  std::vector<RmsStorageInfo> transaction_storage_info_;
-  std::vector<RmsNetworkInfo> transaction_network_info_;
+  // dirty (if the db needs to be updated)
+  bool sys_info_dirty_ = false;
+
+  // TODO make functions to check if sys_info storage info and
+  // network info matches RmsStorageInfo and RmsNetworkInfo
 
  public:
   /** Create computer with given ID*/
   RmsComputer(const int computer_id);
 
-  // Setters
-  void setSysName(const std::string& name);
-  inline const std::string& getSysName() const { return system_name_; }
-  void setHostName(const std::string& name);
-  inline const std::string& getHostName() const { return host_name_; }
-
-  void setOSVersion(const common::thrift::VersionData& ver);
-  inline const common::thrift::VersionData& getOSVersion() const {
-    return os_version_;
+  inline const int getCpuCoreCount() const {
+    return sys_info_.cpu_info.cpu_cores;
   }
-  void setClientVersion(const common::thrift::VersionData& ver);
-  inline const common::thrift::VersionData& getClientVersion() const {
-    return client_version_;
-  }
-
-  void setCpuName(const std::string& name);
-  inline const std::string& getCpuName() const { return cpu_name_; }
-  void setCpuVendor(const std::string& name);
-  inline const std::string& getCpuVendor() const { return cpu_vendor_; }
-
-  void setCpuInfo(const rms::common::thrift::CpuInfo& cpu);
-  inline const int& getCpuCoreCount() const { return cpu_core_count_; }
-  inline const int& getCpuCacheSize() const { return cpu_cache_size_; }
-  inline const std::string& getCpuArch() const { return cpu_arch_; }
 
   void addStorageDevice(const rms::common::thrift::StorageInfo& dev);
   void addNetworkDevice(const rms::common::thrift::NetworkInfo& dev);
 
   inline void setComputerId(int id) { computer_id_ = id; }
   inline const int& getComputerId() const { return computer_id_; }
-
-  inline void startTransaction() { transaction_ = true; };
-
+  inline const rms::common::thrift::SystemInfo& getSysInfo() const {
+    return sys_info_;
+  }
   void setSysInfo(const rms::common::thrift::SystemInfo& sys_info);
-
-  // Ends the transaction and pushes it to the db
-  void endTransaction();
 
   /**
    * Adds the computer to the db if it hasn't been provisioned yet
@@ -127,6 +93,8 @@ class RmsComputer {
    * is created saving on sql calls
    */
   void addToDB();
+
+  void updateDB();
 
   std::string toString() const;
 };

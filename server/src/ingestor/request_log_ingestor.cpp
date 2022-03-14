@@ -24,8 +24,8 @@ LogRequestIngestor::LogRequestIngestor()
 
 void LogRequestIngestor::ingestRequestHeader(
     const rms::common::thrift::RmsHeader& header) {
-  std::cout << "Gets Header: " << header.data_count
-            << "at: " << header.timestamp << std::endl;
+  std::cout << "Get Header: " << header.data_count
+            << " at: " << header.timestamp << std::endl;
   ;
 }
 

@@ -13,6 +13,7 @@
 
 #include "gen-cpp/RMS_types.h"
 #include "gen-cpp/RmsReporterService.h"
+#include "rms/reporter/platform/reporter/sys_reporter.h"
 
 namespace rms {
 namespace reporter {
@@ -73,6 +74,10 @@ class RequestClient {
   void sendRequest(const RequestProtocol& type,
                    common::thrift::RmsRequest&& req);
 
+  void sendSysInfo() {
+    rms::reporter::SysReporter sys_reporter;
+    client_->sendSysInfo(sys_reporter.report());
+  }
   // Controls request_client
   void start();
   void join();

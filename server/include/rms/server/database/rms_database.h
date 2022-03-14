@@ -74,12 +74,12 @@ class RmsDatabase {
 #define RMS_DB_CREATE_COMPUTER_TABLE \
   "CREATE TABLE computer_table("     \
   "computer_id INTEGER NOT NULL,"    \
-  "system_name VARCHAR(32),"         \
-  "host_name VARCHAR(32),"           \
-  "os_version VARCHAR(32),"          \
+  "system_name VARCHAR(256),"        \
+  "host_name VARCHAR(256),"          \
+  "os_version VARCHAR(64),"          \
   "client_version VARCHAR(32),"      \
-  "cpu_name VARCHAR(32),"            \
-  "cpu_vendor VARCHAR(32),"          \
+  "cpu_name VARCHAR(256),"           \
+  "cpu_vendor VARCHAR(64),"          \
   "cpu_core_count INT,"              \
   "cpu_cache_size INT,"              \
   "cpu_arch VARCHAR(10),"            \
@@ -94,7 +94,16 @@ class RmsDatabase {
   "," RMS_DB_TYPE_FMT_VERSION "," RMS_DB_TYPE_FMT_VERSION                    \
   "," RMS_DB_TYPE_FMT_STRING "," RMS_DB_TYPE_FMT_STRING                      \
   "," RMS_DB_TYPE_FMT_INT "," RMS_DB_TYPE_FMT_INT "," RMS_DB_TYPE_FMT_STRING \
-  ")"
+  ");"
+
+#define RMS_DB_UPDATE_COMPUTER_TABLE                                           \
+  "UPDATE computer_table"                                                      \
+  "SET system_name= " RMS_DB_TYPE_FMT_STRING                                   \
+  "host_name=" RMS_DB_TYPE_FMT_STRING "os_version=" RMS_DB_TYPE_FMT_VERSION    \
+  "client_version=" RMS_DB_TYPE_FMT_VERSION "cpu_name=" RMS_DB_TYPE_FMT_STRING \
+  "cpu_vendor=" RMS_DB_TYPE_FMT_STRING "cpu_core_count=" RMS_DB_TYPE_FMT_INT   \
+  "cpu_cache_size=" RMS_DB_TYPE_FMT_INT "cpu_arch=" RMS_DB_TYPE_FMT_STRING     \
+  " WHERE computer_id =" RMS_DB_TYPE_FMT_INT ";"
 
 #define RMS_DB_FETCH_COMPUTER_BY_ID \
   "SELECT * FROM computer_table WHERE computer_id = " RMS_DB_TYPE_FMT_INT

@@ -9,8 +9,6 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
-#include "rms/server/database/rms_database.h"
-
 #include <fmt/format.h>
 #include <sqlite3.h>
 
@@ -18,6 +16,8 @@
 #include <iostream>
 #include <sstream>
 #include <tuple>
+
+#include "rms/server/database/rms_database.h"
 
 namespace rms {
 namespace server {
@@ -58,48 +58,45 @@ bool RmsDatabase::getComputerFromDB(std::shared_ptr<RmsComputer>& computer) {
   auto res = executeQuery(
       fmt::format(RMS_DB_FETCH_COMPUTER_BY_ID, computer->getComputerId())
           .c_str());
-  std::cout << "FINISHED QUERY" << std::endl;
   if (res.success) {
-    rms::common::thrift::CpuInfo cpu_info;
+    rms::common::thrift::SystemInfo sys_info;
     for (int i = 0; i < res.column_names.size(); i++) {
       if (res.column_names[i] == "system_name") {
-        computer->setSysName(res.table_rows[0][i].c_str());
+        sys_info.system_name = res.table_rows[0][i];
       } else if (res.column_names[i] == "host_name") {
-        computer->setHostName(res.table_rows[0][i].c_str());
+        sys_info.host_name = res.table_rows[0][i];
       } else if (res.column_names[i] == "os_version") {
         std::stringstream stream(res.table_rows[0][i]);
         char ch;
         int major, minor, release;
         stream >> major >> ch >> minor >> ch >> release;
-        rms::common::thrift::VersionData os_verison;
-        os_verison.__set_major(major);
-        os_verison.__set_minor(minor);
-        os_verison.__set_release(release);
-        computer->setOSVersion(os_verison);
+        sys_info.os_version.__set_major(major);
+        sys_info.os_version.__set_minor(minor);
+        sys_info.os_version.__set_release(release);
       } else if (res.column_names[i] == "client_version") {
         std::stringstream stream(res.table_rows[0][i]);
         char ch;
         int major, minor, release;
         stream >> major >> ch >> minor >> ch >> release;
-        rms::common::thrift::VersionData client_version;
-        client_version.__set_major(major);
-        client_version.__set_minor(minor);
-        client_version.__set_release(release);
-        computer->setClientVersion(client_version);
+        sys_info.client_version.__set_major(major);
+        sys_info.client_version.__set_minor(minor);
+        sys_info.client_version.__set_release(release);
       } else if (res.column_names[i] == "cpu_name") {
-        computer->setCpuName(res.table_rows[0][i]);
+        sys_info.cpu_info.cpu_name = res.table_rows[0][i];
       } else if (res.column_names[i] == "cpu_vendor") {
-        computer->setCpuVendor(res.table_rows[0][i]);
+        sys_info.cpu_info.cpu_vendor_name = res.table_rows[0][i];
       } else if (res.column_names[i] == "cpu_core_count") {
-        cpu_info.cpu_cores = std::stol(res.table_rows[0][i]);
+        sys_info.cpu_info.cpu_cores = std::stol(res.table_rows[0][i]);
       } else if (res.column_names[i] == "cpu_cache_size") {
-        cpu_info.cache_size = std::stol(res.table_rows[0][i]);
-      } else if (res.column_names[i] == "cpu_cache_size") {
+        sys_info.cpu_info.cache_size = std::stol(res.table_rows[0][i]);
+      } else if (res.column_names[i] == "cpu_arch") {
         // change to string
-        cpu_info.arch = rms::common::thrift::Architecture::kX86_64;
+        if (res.table_rows[0][i] == "kX86_64") {
+          sys_info.cpu_info.arch = common::thrift::Architecture::kX86_64;
+        }
       }
     }
-    computer->setCpuInfo(cpu_info);
+    computer->setSysInfo(sys_info);
   } else {
     std::cerr << "Failed to get computer with id " << computer->getComputerId()
               << " From database" << std::endl;
@@ -108,17 +105,16 @@ bool RmsDatabase::getComputerFromDB(std::shared_ptr<RmsComputer>& computer) {
 }
 
 bool RmsDatabase::insertComputerIntoDB(std::shared_ptr<RmsComputer>& computer) {
-  auto& os_version = computer->getOSVersion();
-  auto& client_version = computer->getClientVersion();
-
+  const auto& sys_info = computer->getSysInfo();
   auto res = executeQuery(
-      fmt::format(RMS_DB_INSERT_COMPUTER_TABLE, computer->getSysName(),
-                  computer->getHostName(), os_version.major, os_version.minor,
-                  os_version.release, client_version.major,
-                  client_version.major, client_version.release,
-                  computer->getCpuName(), computer->getCpuVendor(),
-                  computer->getCpuCoreCount(), computer->getCpuCacheSize(),
-                  computer->getCpuArch())
+      fmt::format(RMS_DB_INSERT_COMPUTER_TABLE, sys_info.system_name,
+                  sys_info.host_name, sys_info.os_version.major,
+                  sys_info.os_version.minor, sys_info.os_version.release,
+                  sys_info.client_version.major, sys_info.client_version.major,
+                  sys_info.client_version.release, sys_info.cpu_info.cpu_name,
+                  sys_info.cpu_info.cpu_vendor_name,
+                  sys_info.cpu_info.cpu_cores, sys_info.cpu_info.cache_size,
+                  rms::common::thrift::to_string(sys_info.cpu_info.arch))
           .c_str(),
       true);
   if (res.success) {

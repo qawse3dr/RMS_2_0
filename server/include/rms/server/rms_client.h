@@ -51,6 +51,9 @@ class RmsClient : public rms::common::thrift::RmsReporterServiceIf {
   void report(rms::common::thrift::RmsResponse& _return,
               const rms::common::thrift::RmsRequest& request) override;
 
+  void sendSysInfo(const rms::common::thrift::SystemInfo& sys_info) override {
+    computer_->setSysInfo(sys_info);
+  }
   /**
    * adds a response to the reponse queue
    * ie if the rms_terminal asks to the sysinfo, it will add it to the queue
@@ -58,7 +61,9 @@ class RmsClient : public rms::common::thrift::RmsReporterServiceIf {
    */
   void addResponse(rms::common::thrift::RmsResponseData&& res);
   inline const int& getId() const { return computer_->getComputerId(); }
-  inline const std::string& getName() const { return computer_->getHostName(); }
+  inline const std::string& getName() const {
+    return computer_->getSysInfo().host_name;
+  }
   inline std::string getComputerAsString() const {
     return computer_->toString();
   }

@@ -9,8 +9,6 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
-#include "rms/reporter/platform/reporter/sys_reporter.h"
-
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <string.h>
@@ -20,6 +18,8 @@
 #include <sys/vfs.h>
 
 #include <iostream>
+
+#include "rms/reporter/platform/reporter/sys_reporter.h"
 
 namespace rms {
 namespace reporter {
@@ -88,7 +88,7 @@ struct common::thrift::SystemInfo SysReporter::report() {
   }
   char buffer[128];
   fscanf(fp, "vendor_id : %s", buffer);
-  sys_info.cpu_vendor_name = buffer;
+  sys_info.cpu_info.cpu_vendor_name = buffer;
   for (int i = 0; i < 3; i++) {
     while ((char)fgetc(fp) != '\n')
       ;
@@ -100,10 +100,10 @@ struct common::thrift::SystemInfo SysReporter::report() {
 
   fscanf(fp, "model name : ");
 
-  sys_info.cpu_name = "";
+  sys_info.cpu_info.cpu_name = "";
   char ch;
   while ((ch = fgetc(fp)) != '\n') {
-    sys_info.cpu_name += ch;
+    sys_info.cpu_info.cpu_name += ch;
   }
 
   for (int i = 0; i < 3; i++) {

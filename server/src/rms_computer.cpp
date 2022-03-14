@@ -1,5 +1,3 @@
-#include "rms/server/rms_computer.h"
-
 #include <arpa/inet.h>
 
 #include <cstring>
@@ -7,48 +5,16 @@
 #include <sstream>
 #include <tuple>
 
+#include "rms/server/rms_computer.h"
+
+using rms::common::thrift::SystemInfo;
+
 namespace rms {
 namespace server {
 
 /** computer exists use computer_id to fetch the data*/
 RmsComputer::RmsComputer(const int computer_id) : computer_id_(computer_id) {
   // fetch info from db
-}
-
-// Setters
-void RmsComputer::setSysName(const std::string& name) {
-  system_name_ = name;
-  if (transaction_) transaction_names_changed_ = true;
-}
-void RmsComputer::setHostName(const std::string& name) {
-  host_name_ = name;
-  if (transaction_) transaction_names_changed_ = true;
-}
-
-void RmsComputer::setOSVersion(const rms::common::thrift::VersionData& ver) {
-  os_version_ = ver;
-  if (transaction_) transaction_versions_changed_ = true;
-}
-void RmsComputer::setClientVersion(
-    const rms::common::thrift::VersionData& ver) {
-  client_version_ = ver;
-  if (transaction_) transaction_versions_changed_ = true;
-}
-
-void RmsComputer::setCpuName(const std::string& name) {
-  cpu_name_ = name;
-  if (transaction_) transaction_cpu_changed_ = true;
-}
-void RmsComputer::setCpuVendor(const std::string& name) {
-  cpu_vendor_ = name;
-  if (transaction_) transaction_cpu_changed_ = true;
-}
-
-void RmsComputer::setCpuInfo(const rms::common::thrift::CpuInfo& cpu) {
-  cpu_core_count_ = cpu.cpu_cores;
-  cpu_cache_size_ = cpu.cache_size;
-  cpu_arch_ = cpu.arch;
-  if (transaction_) transaction_cpu_changed_ = true;
 }
 
 /**
@@ -71,13 +37,8 @@ void RmsComputer::addStorageDevice(
     if (storage.dev_path_ == dev.dev) {  // Found existing device
       if (computer_id_ != -1)
         ;  // Update DB
-      if (transaction_) {
-        RmsStorageInfo info;
-        StorageInfoToRmsStorageInfo(info, dev);
-        transaction_storage_info_.emplace_back(std::move(info));
-      } else {
-        StorageInfoToRmsStorageInfo(storage, dev);
-      }
+      StorageInfoToRmsStorageInfo(storage, dev);
+
       return;
     }
   }
@@ -85,11 +46,7 @@ void RmsComputer::addStorageDevice(
   // Storage Device Doesn't exist add it
   RmsStorageInfo info;
   StorageInfoToRmsStorageInfo(info, dev);
-
-  if (transaction_)
-    transaction_storage_info_.emplace_back(std::move(info));
-  else
-    storage_info_.emplace_back(std::move(info));
+  storage_info_.emplace_back(std::move(info));
 }
 
 static void NetworkDeviceToRmsNetworkDevice(
@@ -130,24 +87,24 @@ void RmsComputer::addNetworkDevice(
   NetworkDeviceToRmsNetworkDevice(info, dev);
 
   network_info_.emplace_back(std::move(info));
-  if (computer_id_ != -1)
-    ;  // Add it to db
 }
 
 void RmsComputer::addToDB() {
   if (computer_id_ == -1) return;
-
-  // add to db
-  computer_id_ = 1;
 }
-void RmsComputer::setSysInfo(const rms::common::thrift::SystemInfo& sys_info) {
-  setHostName(sys_info.host_name);
-  setSysName(sys_info.system_name);
-  setCpuName(sys_info.cpu_name);
-  setCpuInfo(sys_info.cpu_info);
-  setCpuVendor(sys_info.cpu_vendor_name);
-  setClientVersion(sys_info.client_version);
-  setOSVersion(sys_info.os_version);
+
+static bool isSysInfoDirty(const SystemInfo& lhs, const SystemInfo& rhs) {
+  return !(lhs.host_name == rhs.host_name && lhs.cpu_info == rhs.cpu_info &&
+           lhs.system_name == rhs.system_name &&
+           lhs.client_version == rhs.client_version &&
+           lhs.os_version == rhs.os_version);
+}
+
+void RmsComputer::setSysInfo(const SystemInfo& sys_info) {
+  sys_info_dirty_ = isSysInfoDirty(sys_info_, sys_info);
+  sys_info_ = sys_info;
+
+  // TODO check for changes
   for (const auto& network_device : sys_info.network_info) {
     addNetworkDevice(network_device);
   }
@@ -159,16 +116,11 @@ std::string RmsComputer::toString() const {
   std::stringstream ss;
 
   ss << "Computer id:         " << computer_id_ << std::endl;
-  ss << "Computer sys_name:   " << system_name_ << std::endl;
-  ss << "Computer host_name:  " << host_name_ << std::endl;
-  ss << "Computer os_ver:     " << static_cast<int>(os_version_.major) << "."
-     << static_cast<int>(os_version_.minor) << "."
-     << static_cast<int>(os_version_.release) << std::endl;
-  ss << "Computer cpu_vendor: " << cpu_vendor_ << std::endl;
-  ss << "Computer cpu_name:   " << cpu_name_ << std::endl;
-  ss << "Computer cpu_cores:  " << cpu_core_count_ << std::endl;
-  ss << "Computer cpu_cache:  " << cpu_cache_size_ << std::endl;
-  ss << "Computer cpu_arch_:  " << cpu_arch_ << std::endl;
+  ss << "Computer uptime      " << sys_info_.uptime << std::endl;
+  ss << "Computer sys_name:   " << sys_info_.system_name << std::endl;
+  ss << "Computer host_name:  " << sys_info_.host_name << std::endl;
+  ss << "Computer os_ver:     " << sys_info_.os_version << std::endl;
+  ss << "Computer cpu_vendor: " << sys_info_.cpu_info << std::endl;
   ss << "Computer Storage Devices" << std::endl;
   for (const RmsStorageInfo& info : storage_info_) {
     ss << "{"
@@ -191,9 +143,6 @@ std::string RmsComputer::toString() const {
   }
   return ss.str();
 }
-
-// Ends the transaction and pushes it to the db
-void RmsComputer::endTransaction() { transaction_ = false; }
 
 }  // namespace server
 }  // namespace rms

@@ -22,8 +22,8 @@ DbRequestIngestor::DbRequestIngestor()
 
 void DbRequestIngestor::ingestRequestHeader(
     const rms::common::thrift::RmsHeader& header) {
-  std::cout << "Gets Header: " << header.data_count
-            << "at: " << header.timestamp << std::endl;
+  // std::cout << "Get Header: " << header.data_count
+  //           << " at: " << header.timestamp << std::endl;
   ;
 }
 
@@ -31,9 +31,7 @@ void DbRequestIngestor::ingestRequestData(
     const rms::common::thrift::RmsRequestData& data,
     rms::common::thrift::RmsResponse& res,
     std::shared_ptr<RmsComputer>& computer) {
-  switch (data.data_type) {
-   
-  }
+  switch (data.data_type) {}
 }
 }  // namespace server
 }  // namespace rms

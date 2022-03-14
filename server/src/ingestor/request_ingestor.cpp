@@ -8,9 +8,8 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "rms/server/ingestor/request_ingestor.h"
-
 #include "rms/common/util.h"
+#include "rms/server/ingestor/request_ingestor.h"
 
 using rms::common::thrift::RmsRequestTypes;
 
@@ -30,12 +29,8 @@ void RequestIngestor::ingestRequest(const rms::common::thrift::RmsRequest& req,
 
     // Do general ingest stuff Make sure this is done after
     // specific as they take priority
-    switch (data.data_type) {
-      case RmsRequestTypes::kSystemInfo:
-        const auto& sys_info = data.data.sys_info;
-        computer->setSysInfo(sys_info);
-        break;
-    }
+    // switch (data.data_type) {
+    // }
   }
 }
 

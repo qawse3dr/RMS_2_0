@@ -62,7 +62,8 @@ RmsDatabase::RmsQueryResult RmsSqliteDatabase::executeQuery(
   int rc = sqlite3_prepare_v2(db_, query, -1, &sql_res, 0);
   if (rc != SQLITE_OK) {
     res.success = false;
-    std::cerr << "Failed to fetch data" << sqlite3_errmsg(db_) << std::endl;
+    std::cerr << "Failed to fetch data: " << sqlite3_errmsg(db_) << std::endl;
+    std::cerr << "Query " << query << std::endl;
     return res;
   }
   int column_count = sqlite3_column_count(sql_res);
