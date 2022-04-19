@@ -39,12 +39,12 @@ int64_t RmsClient::handshake(const int64_t id, const SystemInfo& sys_info) {
   computer_ = std::make_shared<RmsComputer>(id);
 
   if (id != -1) {
-    RmsServer::getInstance()->getComputerFromDB(computer_);
+    computer_->getFromDB();
     computer_->setSysInfo(sys_info);
     // todo update computer
   } else {
     computer_->setSysInfo(sys_info);
-    RmsServer::getInstance()->insertComputerIntoDB(computer_);
+    computer_->addToDB();
   }
   return computer_->getComputerId();
 }
@@ -63,12 +63,12 @@ void RmsClient::report(RmsResponse& res, const RmsRequest& req) {
   response_mutex_.unlock();
 
   // this should be serial
-  RmsServer::getInstance()->getIngestor()->ingestRequest(req, res, computer_);
+  RmsServer::getInstance().getIngestor().ingestRequest(req, res, computer_);
 }
 
 void RmsReporterServiceFactory::releaseHandler(
     rms::common::thrift::RmsReporterServiceIf* client) {
-  RmsServer::getInstance()->removeClient(
+  RmsServer::getInstance().removeClient(
       static_cast<RmsClient*>(client)->getId());
   delete client;
 }
@@ -79,14 +79,14 @@ RmsReporterServiceFactory::getHandler(
   using namespace apache::thrift::transport;
   std::shared_ptr<TSocket> sock =
       std::dynamic_pointer_cast<TSocket>(connInfo.transport);
-  std::cout << "Incoming connection\n";
+  std::cout << "\nIncoming connection\n";
   std::cout << "\tSocketInfo: " << sock->getSocketInfo() << "\n";
   std::cout << "\tPeerHost: " << sock->getPeerHost() << "\n";
   std::cout << "\tPeerAddress: " << sock->getPeerAddress() << "\n";
   std::cout << "\tPeerPort: " << sock->getPeerPort() << "\n";
 
   auto client = new RmsClient;
-  RmsServer::getInstance()->addClient(client);
+  RmsServer::getInstance().addClient(client);
   return client;
 }
 }  // namespace server

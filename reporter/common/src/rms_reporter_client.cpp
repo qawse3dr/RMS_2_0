@@ -17,18 +17,9 @@
 namespace rms {
 namespace reporter {
 
-RmsReporterClient* RmsReporterClient::reporter_client_ = nullptr;
-
-RmsReporterClient* RmsReporterClient::getInstance() {
-  if (!reporter_client_) reporter_client_ = new RmsReporterClient();
-  return reporter_client_;
-}
-
-void RmsReporterClient::cleanUp() {
-  if (reporter_client_) {  // only cleanup if it exists
-    delete reporter_client_;
-    reporter_client_ = nullptr;
-  }
+RmsReporterClient& RmsReporterClient::getInstance() {
+  static RmsReporterClient client;
+  return client;
 }
 
 RmsReporterClient::RmsReporterClient() {

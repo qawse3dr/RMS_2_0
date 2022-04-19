@@ -15,7 +15,7 @@ set(SRC_FILES
     "src/request_client.cpp"
 
 )
-add_executable(rms ${SRC_FILES})
-target_link_libraries(rms rms_platform pthread rms_common)
-target_include_directories(rms 
+add_executable(rms_reporter ${SRC_FILES})
+target_link_libraries(rms_reporter rms_platform pthread rms_common)
+target_include_directories(rms_reporter 
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

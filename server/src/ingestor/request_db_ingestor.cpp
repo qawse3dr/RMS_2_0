@@ -21,11 +21,7 @@ DbRequestIngestor::DbRequestIngestor()
     : RequestIngestor(RequestIngestorType::KdbIngestor), database_(nullptr) {}
 
 void DbRequestIngestor::ingestRequestHeader(
-    const rms::common::thrift::RmsHeader& header) {
-  // std::cout << "Get Header: " << header.data_count
-  //           << " at: " << header.timestamp << std::endl;
-  ;
-}
+    const rms::common::thrift::RmsHeader& header) {}
 
 void DbRequestIngestor::ingestRequestData(
     const rms::common::thrift::RmsRequestData& data,

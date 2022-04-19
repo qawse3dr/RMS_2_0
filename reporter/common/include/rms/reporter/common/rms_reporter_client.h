@@ -28,15 +28,13 @@ class RmsReporterClient {
 
   RequestClient request_client_;
 
-  static RmsReporterClient* reporter_client_;
-
   // TODO Create Work Queue
 
   RmsReporterClient();
   ~RmsReporterClient() {}
 
  public:
-  static RmsReporterClient* getInstance();
+  static RmsReporterClient& getInstance();
   // Starts up the reporter application
   int start();
 
@@ -49,8 +47,6 @@ class RmsReporterClient {
   void triggerSysConsumer();
 
   inline RequestClient& getRequestClient() { return request_client_; }
-
-  static void cleanUp();
 };
 
 }  // namespace reporter

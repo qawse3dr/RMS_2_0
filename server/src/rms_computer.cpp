@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <fmt/format.h>
 
 #include <cstring>
 #include <iostream>
@@ -6,6 +7,7 @@
 #include <tuple>
 
 #include "rms/server/rms_computer.h"
+#include "rms/server/rms_server.h"
 
 using rms::common::thrift::SystemInfo;
 
@@ -14,7 +16,12 @@ namespace server {
 
 /** computer exists use computer_id to fetch the data*/
 RmsComputer::RmsComputer(const int computer_id) : computer_id_(computer_id) {
-  // fetch info from db
+  // Create basic usage info
+  usage_info_.emplace_back(UsageType::kNetwork);
+  usage_info_.emplace_back(UsageType::kRam, 0);  // SYS Ram
+  usage_info_.emplace_back(UsageType::kRam, 1);  // Swap
+  usage_info_.emplace_back(UsageType::kCpu, 0);  // master_cpu
+  // TODO add core cpu's
 }
 
 /**
@@ -89,8 +96,75 @@ void RmsComputer::addNetworkDevice(
   network_info_.emplace_back(std::move(info));
 }
 
-void RmsComputer::addToDB() {
-  if (computer_id_ == -1) return;
+bool RmsComputer::addToDB() {
+  auto res = RmsServer::getInstance().getDatabase().executeQuery(
+      fmt::format(RMS_DB_INSERT_COMPUTER_TABLE, sys_info_.system_name,
+                  sys_info_.host_name, sys_info_.os_version.major,
+                  sys_info_.os_version.minor, sys_info_.os_version.release,
+                  sys_info_.client_version.major,
+                  sys_info_.client_version.major,
+                  sys_info_.client_version.release, sys_info_.cpu_info.cpu_name,
+                  sys_info_.cpu_info.cpu_vendor_name,
+                  sys_info_.cpu_info.cpu_cores, sys_info_.cpu_info.cache_size,
+                  rms::common::thrift::to_string(sys_info_.cpu_info.arch))
+          .c_str(),
+      true);
+  if (res.success) {
+    setComputerId(res.last_id);
+  }
+
+  return res.success;
+}
+bool RmsComputer::getFromDB() {
+  if (getComputerId() == -1) {
+    // TODO add log here
+    std::cerr << "Computer id invalid not grabbing from db" << std::endl;
+    return false;
+  }
+  auto res = RmsServer::getInstance().getDatabase().executeQuery(
+      fmt::format(RMS_DB_FETCH_COMPUTER_BY_ID, getComputerId()).c_str());
+  if (res.success) {
+    for (int i = 0; i < res.column_names.size(); i++) {
+      if (res.column_names[i] == "system_name") {
+        sys_info_.system_name = res.table_rows[0][i];
+      } else if (res.column_names[i] == "host_name") {
+        sys_info_.host_name = res.table_rows[0][i];
+      } else if (res.column_names[i] == "os_version") {
+        std::stringstream stream(res.table_rows[0][i]);
+        char ch;
+        int major, minor, release;
+        stream >> major >> ch >> minor >> ch >> release;
+        sys_info_.os_version.__set_major(major);
+        sys_info_.os_version.__set_minor(minor);
+        sys_info_.os_version.__set_release(release);
+      } else if (res.column_names[i] == "client_version") {
+        std::stringstream stream(res.table_rows[0][i]);
+        char ch;
+        int major, minor, release;
+        stream >> major >> ch >> minor >> ch >> release;
+        sys_info_.client_version.__set_major(major);
+        sys_info_.client_version.__set_minor(minor);
+        sys_info_.client_version.__set_release(release);
+      } else if (res.column_names[i] == "cpu_name") {
+        sys_info_.cpu_info.cpu_name = res.table_rows[0][i];
+      } else if (res.column_names[i] == "cpu_vendor") {
+        sys_info_.cpu_info.cpu_vendor_name = res.table_rows[0][i];
+      } else if (res.column_names[i] == "cpu_core_count") {
+        sys_info_.cpu_info.cpu_cores = std::stol(res.table_rows[0][i]);
+      } else if (res.column_names[i] == "cpu_cache_size") {
+        sys_info_.cpu_info.cache_size = std::stol(res.table_rows[0][i]);
+      } else if (res.column_names[i] == "cpu_arch") {
+        // change to string
+        if (res.table_rows[0][i] == "kX86_64") {
+          sys_info_.cpu_info.arch = common::thrift::Architecture::kX86_64;
+        }
+      }
+    }
+  } else {
+    std::cerr << "Failed to get computer with id " << getComputerId()
+              << " From database" << std::endl;
+  }
+  return res.success;
 }
 
 static bool isSysInfoDirty(const SystemInfo& lhs, const SystemInfo& rhs) {
@@ -119,7 +193,10 @@ std::string RmsComputer::toString() const {
   ss << "Computer uptime      " << sys_info_.uptime << std::endl;
   ss << "Computer sys_name:   " << sys_info_.system_name << std::endl;
   ss << "Computer host_name:  " << sys_info_.host_name << std::endl;
-  ss << "Computer os_ver:     " << sys_info_.os_version << std::endl;
+  ss << "Computer os_version:     " << sys_info_.os_version << std::endl;
+  ss << "Computer client_version:     " << sys_info_.client_version
+     << std::endl;
+  ss << "Computer cpu_core:   " << sys_info_.cpu_info.cpu_cores << std::endl;
   ss << "Computer cpu_vendor: " << sys_info_.cpu_info << std::endl;
   ss << "Computer Storage Devices" << std::endl;
   for (const RmsStorageInfo& info : storage_info_) {
@@ -143,6 +220,8 @@ std::string RmsComputer::toString() const {
   }
   return ss.str();
 }
+
+bool RmsComputer::updateDB() { return true; }
 
 }  // namespace server
 }  // namespace rms

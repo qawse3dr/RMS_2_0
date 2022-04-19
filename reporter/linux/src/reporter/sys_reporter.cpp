@@ -19,6 +19,7 @@
 
 #include <iostream>
 
+#include "rms/common/rms_version_info.h"
 #include "rms/reporter/platform/reporter/sys_reporter.h"
 
 namespace rms {
@@ -138,10 +139,17 @@ struct common::thrift::SystemInfo SysReporter::report() {
     sys_info.cpu_info.arch = common::thrift::Architecture::kUnknown;
   }
 
-  sscanf(uname_buf.release, "%hhd.%hhd.%hhd", &sys_info.os_version.major,
-         &sys_info.os_version.minor, &sys_info.os_version.release);
-
+  common::thrift::VersionData os_version;
+  sscanf(uname_buf.release, "%hhd.%hhd.%hhd", &os_version.major,
+         &os_version.minor, &os_version.release);
+  sys_info.__set_os_version(os_version);
   // TODO get temp_info
+
+  common::thrift::VersionData client_version;
+  client_version.major = RMS_2_0_REPORTER_MAJOR_VERSION;
+  client_version.minor = RMS_2_0_REPORTER_MINOR_VERSION;
+  client_version.release = RMS_2_0_REPORTER_MINOR_VERSION;
+  sys_info.__set_client_version(client_version);
 
   return {sys_info};
 }

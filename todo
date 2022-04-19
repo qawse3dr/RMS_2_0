@@ -4,19 +4,24 @@ FEATURES
     - create tables
   - Create Logger or a one maybe as a separate project so i can reuse it for other cpp projects  
   - list current info about clients with given ID (display computer)
+  - get usb devices
+    maybe use e-bpf to detect new devices so I know when to add
+  - get bluetooth devices
+  - get running processes (don't save anywhere)
+    - pid
+    - usage
+    - name
+  - get running services
+  - installed pkg's
+  - more sys info
+    - gpu 
+    - ram speeds
+    - 
+
 BUGS
 
 REFACTOR
   - Have a pool of consumers that get jobs given to it
     having a thread per consumer could be wasting performance so a queue job might
     be useful to decrease thread count without losing performance.
-  - Change programs to use pthread_sigmask() (Done for server)
-  - The server and reporter code should really be gutted and fixed up (done for server)
-  - There is not really flow or to how the code is written. There should be a
-    singleton class that controls everything, so from main a single function
-    can be called to start. this will also make it easier to hold shared data
-    such as the computers on the server (Done for server)
   - figure a better way to sleep besides sleep (maybe sleep for timeout but in 1 second intervals)
-  - I want to find a better way to do networking that it allows to be system agnostic 
-    boost::asio seems like a good way to do this but it seems a little confusing so
-    Ill leave this for now

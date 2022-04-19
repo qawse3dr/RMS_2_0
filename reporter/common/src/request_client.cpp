@@ -196,7 +196,7 @@ int RequestClient::handleResponseData(
   switch (res_data.data_type) {
     case common::thrift::RmsResponseTypes::kSendSystemInfo:
       std::cout << "Sending sysInfo" << std::endl;
-      RmsReporterClient::getInstance()->triggerSysConsumer();
+      RmsReporterClient::getInstance().triggerSysConsumer();
       break;
     default:
       std::cout << "un implemented ResponseType:: "

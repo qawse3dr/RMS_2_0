@@ -8,8 +8,6 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "rms/server/client_handler.h"
-
 #include <arpa/inet.h>
 #include <linux/socket.h>
 #include <string.h>
@@ -22,6 +20,7 @@
 #include <memory>
 
 #include "gen-cpp/RMS_types.h"
+#include "rms/server/client_handler.h"
 #include "rms/server/rms_client.h"
 #include "rms/server/rms_server.h"
 
@@ -34,16 +33,7 @@ using rms::common::thrift::RmsReporterServiceProcessorFactory;
 namespace rms {
 namespace server {
 
-void ClientHandler::acceptClients() {
-  server_->serve();
-
-  // Create Client, and start it up based on given fd
-  // std::unique_ptr<RmsClient> client = std::make_unique<RmsClient>(connfd);
-  // client->start();
-
-  // // Adds client to server
-  // RmsServer::getInstance()->addClient(std::move(client));
-}
+void ClientHandler::acceptClients() { server_->serve(); }
 
 void ClientHandler::startListener(int port) {
   running_ = true;

@@ -15,9 +15,9 @@ namespace cpp rms.common.thrift
 // Common
 
 struct VersionData {
-  1: i8 release,
-  2: i8 major,
-  3: i8 minor
+  1: i32 release,
+  2: i32 major,
+  3: i32 minor
 }
 
 struct RmsHeader {
@@ -42,7 +42,7 @@ enum Architecture {
 }
 
 struct CpuInfo {
-  1: i8 cpu_cores,
+  1: i32 cpu_cores,
   2: i16 cache_size,
   3: Architecture arch
   4: string cpu_name,

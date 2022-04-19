@@ -33,9 +33,6 @@ namespace server {
 
 class RmsServer {
  private:
-  // singleton instance of RmsServer
-  static RmsServer* server_;
-
   // compontants to bring up the server
   std::unique_ptr<ClientHandler> client_handler_;
   std::unique_ptr<RequestIngestor> ingestor_;
@@ -69,7 +66,7 @@ class RmsServer {
   RmsServer();
 
  public:
-  static RmsServer* getInstance();
+  static RmsServer& getInstance();
 
   /**
    * Starts up the server.
@@ -126,27 +123,17 @@ class RmsServer {
    *
    * @return const std::unique_ptr<RequestIngestor>&
    */
-  inline const std::unique_ptr<RequestIngestor>& getIngestor() {
-    return ingestor_;
-  }
+  inline RequestIngestor& getIngestor() { return *ingestor_; }
 
-  inline bool getComputerFromDB(std::shared_ptr<RmsComputer>& computer) {
-    return database_->getComputerFromDB(computer);
-  }
-
-  inline bool insertComputerIntoDB(std::shared_ptr<RmsComputer>& computer) {
-    return database_->insertComputerIntoDB(computer);
-  }
+  inline RmsDatabase& getDatabase() { return *database_; }
 
   /**
    * @brief Checks if the server is running
    *
    * @return true if running
    */
-  static inline bool isRunning() { return (server_ != nullptr); }
-
-  // Cleans up the pointer data
-  static void cleanUp();
+  // TODO fix
+  static inline bool isRunning() { return (true); }
 };
 
 }  // namespace server
