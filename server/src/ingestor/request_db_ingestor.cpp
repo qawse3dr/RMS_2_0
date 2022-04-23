@@ -21,19 +21,13 @@ DbRequestIngestor::DbRequestIngestor()
     : RequestIngestor(RequestIngestorType::KdbIngestor), database_(nullptr) {}
 
 void DbRequestIngestor::ingestRequestHeader(
-    const rms::common::thrift::RmsHeader& header) {
-  std::cout << "Gets Header: " << header.data_count
-            << "at: " << header.timestamp << std::endl;
-  ;
-}
+    const rms::common::thrift::RmsHeader& header) {}
 
 void DbRequestIngestor::ingestRequestData(
     const rms::common::thrift::RmsRequestData& data,
     rms::common::thrift::RmsResponse& res,
     std::shared_ptr<RmsComputer>& computer) {
-  switch (data.data_type) {
-   
-  }
+  switch (data.data_type) {}
 }
 }  // namespace server
 }  // namespace rms

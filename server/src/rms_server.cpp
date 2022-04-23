@@ -8,8 +8,6 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "rms/server/rms_server.h"
-
 #include <algorithm>
 #include <iostream>
 
@@ -17,19 +15,19 @@
 #include "rms/server/database/rms_sqlite_database.h"
 #include "rms/server/ingestor/request_db_ingestor.h"
 #include "rms/server/ingestor/request_log_ingestor.h"
+#include "rms/server/rms_server.h"
 #include "rms/server/rms_terminal.h"
 
 namespace rms {
 namespace server {
 
-RmsServer* RmsServer::server_ = nullptr;
-
 RmsServer::RmsServer() : clients_() {
   client_handler_ = std::make_unique<ClientHandler>();
 }
-RmsServer* RmsServer::getInstance() {
-  if (!server_) server_ = new RmsServer();
-  return server_;
+
+RmsServer& RmsServer::getInstance() {
+  static RmsServer server;
+  return server;
 }
 
 int RmsServer::start() {
@@ -92,9 +90,8 @@ RmsClient* RmsServer::getClient(std::int32_t id) {
 }
 
 void RmsServer::addClient(RmsClient* client) {
-  client_mutex_.lock();
+  std::lock_guard<std::mutex> lk(client_mutex_);
   getClients().push_back(client);
-  client_mutex_.unlock();
 }
 void RmsServer::removeClient(std::int32_t id) {
   std::lock_guard<std::mutex> lk(client_mutex_);
@@ -106,14 +103,6 @@ void RmsServer::removeClient(std::int32_t id) {
                                  return client->getId() == id;
                                }),
                 clients.end());
-}
-
-// Cleans up the pointer data
-void RmsServer::cleanUp() {
-  if (server_) {
-    delete server_;
-    server_ = nullptr;
-  }
 }
 
 int RmsServer::clientsConnected() {

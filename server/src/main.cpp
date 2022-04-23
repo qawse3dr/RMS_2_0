@@ -9,8 +9,7 @@
 
 int rms_exit_handler(int) {
   printf("RMS 2.0 shutting down\n");
-  rms::server::RmsServer::getInstance()->stop();
-  rms::server::RmsServer::cleanUp();
+  rms::server::RmsServer::getInstance().stop();
   return 0;
 }
 
@@ -25,7 +24,7 @@ int main() {
   std::cout << "Welcome to RMS (Remote Management System) 2.0" << std::endl;
 
   // This will block till closed exit command in terminal
-  rms::server::RmsServer::getInstance()->start();
+  rms::server::RmsServer::getInstance().start();
 
   return 0;
 }

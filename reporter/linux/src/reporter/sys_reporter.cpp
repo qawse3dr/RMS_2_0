@@ -9,8 +9,6 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
-#include "rms/reporter/platform/reporter/sys_reporter.h"
-
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <string.h>
@@ -20,6 +18,9 @@
 #include <sys/vfs.h>
 
 #include <iostream>
+
+#include "rms/common/rms_version_info.h"
+#include "rms/reporter/platform/reporter/sys_reporter.h"
 
 namespace rms {
 namespace reporter {
@@ -44,11 +45,11 @@ struct common::thrift::SystemInfo SysReporter::report() {
                        fs_type_buffer)) {
     storage_info.dev = dev_buffer;
     storage_info.fs_type = fs_type_buffer;
+    storage_info.mount_point = mount_point;
     if (storage_info.dev[0] != '/') continue;
     // Get stats from mount_point
     struct statfs info;
     statfs(mount_point, &info);
-
     storage_info.free =
         info.f_bavail * info.f_bsize / (1000.0 * 1000.0 * 1000.0);
     storage_info.total =
@@ -88,7 +89,7 @@ struct common::thrift::SystemInfo SysReporter::report() {
   }
   char buffer[128];
   fscanf(fp, "vendor_id : %s", buffer);
-  sys_info.cpu_vendor_name = buffer;
+  sys_info.cpu_info.cpu_vendor_name = buffer;
   for (int i = 0; i < 3; i++) {
     while ((char)fgetc(fp) != '\n')
       ;
@@ -100,10 +101,10 @@ struct common::thrift::SystemInfo SysReporter::report() {
 
   fscanf(fp, "model name : ");
 
-  sys_info.cpu_name = "";
+  sys_info.cpu_info.cpu_name = "";
   char ch;
   while ((ch = fgetc(fp)) != '\n') {
-    sys_info.cpu_name += ch;
+    sys_info.cpu_info.cpu_name += ch;
   }
 
   for (int i = 0; i < 3; i++) {
@@ -138,10 +139,17 @@ struct common::thrift::SystemInfo SysReporter::report() {
     sys_info.cpu_info.arch = common::thrift::Architecture::kUnknown;
   }
 
-  sscanf(uname_buf.release, "%hhd.%hhd.%hhd", &sys_info.os_version.major,
-         &sys_info.os_version.minor, &sys_info.os_version.release);
-
+  common::thrift::VersionData os_version;
+  sscanf(uname_buf.release, "%hhd.%hhd.%hhd", &os_version.major,
+         &os_version.minor, &os_version.release);
+  sys_info.__set_os_version(os_version);
   // TODO get temp_info
+
+  common::thrift::VersionData client_version;
+  client_version.major = RMS_2_0_REPORTER_MAJOR_VERSION;
+  client_version.minor = RMS_2_0_REPORTER_MINOR_VERSION;
+  client_version.release = RMS_2_0_REPORTER_RELEASE_VERSION;
+  sys_info.__set_client_version(client_version);
 
   return {sys_info};
 }

@@ -24,8 +24,8 @@ LogRequestIngestor::LogRequestIngestor()
 
 void LogRequestIngestor::ingestRequestHeader(
     const rms::common::thrift::RmsHeader& header) {
-  std::cout << "Gets Header: " << header.data_count
-            << "at: " << header.timestamp << std::endl;
+  std::cout << "Get Header: " << header.data_count
+            << " at: " << header.timestamp << std::endl;
   ;
 }
 
@@ -33,23 +33,7 @@ void LogRequestIngestor::ingestRequestData(
     const rms::common::thrift::RmsRequestData& data,
     rms::common::thrift::RmsResponse& res,
     std::shared_ptr<RmsComputer>& computer) {
-  switch (data.data_type) {
-    // case RmsRequestTypes::kHandshakeStart:
-    //   std::cout << "handshake started" << std::endl;
-    //   computer = std::make_shared<RmsComputer>(data.data.long_);
-    //   break;
-    // case RmsRequestTypes::kHandshakeEnd:
-    //   std::cout << "handshake ended" << std::endl;
-    //   res.header.data_count += 1;
-
-    //   // For log ingestor just return the computer id given,
-    //   // even if its -1 as we don't have access to the db
-    //   rms::common::thrift::RmsResponseData res_data;
-    //   res_data.data_type = RmsResponseTypes::kHandShake;
-    //   res_data.data.long_ = computer->getComputerId();
-    //   res.data.emplace_back(std::move(res_data));
-    //   break;
-  }
+  std::cout << data << std::endl;
   // rms::common::printRequestData(data);
 }
 }  // namespace server

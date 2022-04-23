@@ -8,8 +8,6 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "rms/server/rms_client.h"
-
 #include <arpa/inet.h>
 #include <linux/socket.h>
 
@@ -17,6 +15,7 @@
 
 #include "gen-cpp/RMS_types.h"
 #include "rms/common/util.h"
+#include "rms/server/rms_client.h"
 #include "rms/server/rms_server.h"
 
 using rms::common::thrift::RmsRequest;
@@ -36,16 +35,16 @@ void RmsClient::addResponse(rms::common::thrift::RmsResponseData&& res_data) {
   response_queue_.emplace(std::move(res_data));
 }
 
-int64_t RmsClient::handshake(const int64_t id,
-                             const rms::common::thrift::SystemInfo& sys_info) {
+int64_t RmsClient::handshake(const int64_t id, const SystemInfo& sys_info) {
   computer_ = std::make_shared<RmsComputer>(id);
 
-  if (id == -1) {
-    RmsServer::getInstance()->getComputerFromDB(computer_);
-    // todo update computer
+  if (id != -1) {
+    computer_->getFromDB();
+    computer_->setSysInfo(sys_info);
+    computer_->updateDB();
   } else {
     computer_->setSysInfo(sys_info);
-    RmsServer::getInstance()->insertComputerIntoDB(computer_);
+    computer_->addToDB();
   }
   return computer_->getComputerId();
 }
@@ -64,12 +63,12 @@ void RmsClient::report(RmsResponse& res, const RmsRequest& req) {
   response_mutex_.unlock();
 
   // this should be serial
-  RmsServer::getInstance()->getIngestor()->ingestRequest(req, res, computer_);
+  RmsServer::getInstance().getIngestor().ingestRequest(req, res, computer_);
 }
 
 void RmsReporterServiceFactory::releaseHandler(
     rms::common::thrift::RmsReporterServiceIf* client) {
-  RmsServer::getInstance()->removeClient(
+  RmsServer::getInstance().removeClient(
       static_cast<RmsClient*>(client)->getId());
   delete client;
 }
@@ -80,14 +79,14 @@ RmsReporterServiceFactory::getHandler(
   using namespace apache::thrift::transport;
   std::shared_ptr<TSocket> sock =
       std::dynamic_pointer_cast<TSocket>(connInfo.transport);
-  std::cout << "Incoming connection\n";
+  std::cout << "\nIncoming connection\n";
   std::cout << "\tSocketInfo: " << sock->getSocketInfo() << "\n";
   std::cout << "\tPeerHost: " << sock->getPeerHost() << "\n";
   std::cout << "\tPeerAddress: " << sock->getPeerAddress() << "\n";
   std::cout << "\tPeerPort: " << sock->getPeerPort() << "\n";
 
   auto client = new RmsClient;
-  RmsServer::getInstance()->addClient(client);
+  RmsServer::getInstance().addClient(client);
   return client;
 }
 }  // namespace server

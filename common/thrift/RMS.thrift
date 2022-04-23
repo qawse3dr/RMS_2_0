@@ -15,9 +15,9 @@ namespace cpp rms.common.thrift
 // Common
 
 struct VersionData {
-  1: i8 release,
-  2: i8 major,
-  3: i8 minor
+  1: i32 release,
+  2: i32 major,
+  3: i32 minor
 }
 
 struct RmsHeader {
@@ -42,9 +42,11 @@ enum Architecture {
 }
 
 struct CpuInfo {
-  1: i8 cpu_cores,
+  1: i32 cpu_cores,
   2: i16 cache_size,
   3: Architecture arch
+  4: string cpu_name,
+  5: string cpu_vendor_name,
 }
 
 
@@ -95,7 +97,8 @@ struct StorageInfo {
   1: string dev,
   2: string fs_type,
   3: i64 free,
-  4: i64 total
+  4: i64 total,
+  5: string mount_point
 }
 
 // Temp
@@ -118,14 +121,12 @@ struct SystemInfo {
   5: VersionData client_version,
 
   // CPU Info
-  6: string cpu_name,
-  7: string cpu_vendor_name,
-  8: CpuInfo cpu_info,
+  6: CpuInfo cpu_info,
 
   // List of system info
-  9: list<StorageInfo> storage_info,
-  10: list<NetworkInfo> network_info,
-  11: list<TemperatureInfo> temp_info
+  7: list<StorageInfo> storage_info,
+  8: list<NetworkInfo> network_info,
+  9: list<TemperatureInfo> temp_info
 }
 
 
@@ -144,8 +145,6 @@ enum RmsRequestTypes {
   // Network Info
   kNetworkUsage,
 
-  // System Info
-  kSystemInfo,
 
   kUnknown = 1000,
 }
@@ -153,12 +152,10 @@ enum RmsRequestTypes {
 union RmsRequestValues {
   1: RamData ram_data,
   2: CpuUsageData cpu_usage_data,
-  3: SystemInfo sys_info,
 
   // multi-use types
-  4: VersionData version,
-  5: string str_,
-  6: i64 long_
+  3: string str_,
+  4: i64 long_
 
 }
 
@@ -180,6 +177,14 @@ service RmsReporterService {
    * creates the computer in the server
    */
   i64 handshake(1: i64 id, 2: SystemInfo sys_info),
+
+  /**
+   * Sends the sys info seperate from the rest
+   * as it is much bigger so it increases the union
+   * size. also will not be polled and only sent every so
+   * often
+  */
+  oneway void sendSysInfo(1:SystemInfo sys_info),
 
   /**
    * Reports info to the server and gives back

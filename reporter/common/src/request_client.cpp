@@ -1,5 +1,3 @@
-#include "rms/reporter/common/request_client.h"
-
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -9,7 +7,9 @@
 #include "rms/common/rms_config.h"
 #include "rms/common/rms_version_info.h"
 #include "rms/common/util.h"
+#include "rms/reporter/common/request_client.h"
 #include "rms/reporter/common/rms_reporter_client.h"
+#include "rms/reporter/platform/reporter/sys_reporter.h"
 
 // Used for tuples to make reading the get value easier.
 #define GET_REQUEST_TYPE 0
@@ -94,8 +94,12 @@ void RequestClient::pollRequests() {
     } else {  // Failed to send add back the value to the counter and print
               // error message
       std::cerr << "Warning:: Failed to send Request" << std::endl;
-      std::this_thread::sleep_for(std::chrono::seconds(10));
       request_counter_.release();
+      handshakeTCP();
+      if (!poll_requests_) {
+        rw_semaphore_.release();
+        break;
+      }
     }
     // Dont release till after wait to stop queue from filling up
     rw_semaphore_.release();
@@ -104,6 +108,22 @@ void RequestClient::pollRequests() {
 
 void RequestClient::start() {
   if (poll_requests_) return;
+
+  work_thread_ = std::thread(&RequestClient::pollRequests, this);
+}
+
+void RequestClient::stop() {
+  poll_requests_.store(false);
+  // Add one to request_counter to stop it from getting stuck
+  request_counter_.release();
+  work_thread_.join();
+  transport_->close();
+}
+
+void RequestClient::join() { work_thread_.join(); }
+
+int RequestClient::handshakeTCP() {
+  std::cout << "Connect to server" << std::endl;
 
   std::string port =
       rms::common::RmsConfig::find(RMS_REPORTER_CONFIG_SERVER_PORT);
@@ -117,26 +137,25 @@ void RequestClient::start() {
     std::cerr << "Error:: server IP not set in confing" << std::endl;
     exit(EXIT_FAILURE);
   }
+
+  std::cout << "IP: " << IP << ":" << port << std::endl;
   socket_ = std::shared_ptr<TTransport>(new TSocket(IP, std::stol(port)));
   transport_ = std::shared_ptr<TTransport>(new TBufferedTransport(socket_));
   protocol_ = std::shared_ptr<TProtocol>(new TBinaryProtocol(transport_));
   client_ = std::make_unique<RmsReporterServiceClient>(protocol_);
-  transport_->open();
-  work_thread_ = std::thread(&RequestClient::pollRequests, this);
-}
 
-void RequestClient::stop() {
-  poll_requests_.store(false);
-  // Add one to request_counter to stop it from getting stuck
-  request_counter_.release();
-  work_thread_.join();
-
-  transport_->close();
-}
-
-void RequestClient::join() { work_thread_.join(); }
-
-int RequestClient::handshakeTCP() {
+  while (poll_requests_) {
+    try {
+      transport_->open();
+      break;
+    } catch (const std::exception& e) {
+      std::cerr << "failed to connect server with:" << e.what();
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+  }
+  if (!poll_requests_) {
+    return -1;
+  }
   std::cout << "Handshake Started" << std::endl;
   // Get base sysinfo
   rms::reporter::SysReporter sys_reporter;
@@ -156,7 +175,13 @@ int RequestClient::handshakeTCP() {
 
 int RequestClient::sendTcpRequest(const common::thrift::RmsRequest& req) {
   RmsResponse res;
-  client_->report(res, req);
+  try {
+    client_->report(res, req);
+
+  } catch (const std::exception& e) {
+    std::cerr << "Failed to send request with: " << e.what() << std::endl;
+    return -1;
+  }
 
   for (const auto& res_data : res.data) {
     handleResponseData(res_data);
@@ -171,7 +196,7 @@ int RequestClient::handleResponseData(
   switch (res_data.data_type) {
     case common::thrift::RmsResponseTypes::kSendSystemInfo:
       std::cout << "Sending sysInfo" << std::endl;
-      RmsReporterClient::getInstance()->triggerSysConsumer();
+      RmsReporterClient::getInstance().triggerSysConsumer();
       break;
     default:
       std::cout << "un implemented ResponseType:: "
