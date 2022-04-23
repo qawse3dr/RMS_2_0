@@ -97,7 +97,8 @@ struct StorageInfo {
   1: string dev,
   2: string fs_type,
   3: i64 free,
-  4: i64 total
+  4: i64 total,
+  5: string mount_point
 }
 
 // Temp

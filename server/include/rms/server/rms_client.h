@@ -53,6 +53,7 @@ class RmsClient : public rms::common::thrift::RmsReporterServiceIf {
 
   void sendSysInfo(const rms::common::thrift::SystemInfo& sys_info) override {
     computer_->setSysInfo(sys_info);
+    computer_->updateDB();
   }
   /**
    * adds a response to the reponse queue

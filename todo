@@ -1,9 +1,12 @@
 FEATURES
   - execute cmd on computer
-  - Create Database
-    - create tables
+  - send info to Database
+    - usage (send once an hour but keep ticks everyone minute)
+    - network
+    - hdd
+    - update databases
+
   - Create Logger or a one maybe as a separate project so i can reuse it for other cpp projects  
-  - list current info about clients with given ID (display computer)
   - get usb devices
     maybe use e-bpf to detect new devices so I know when to add
   - get bluetooth devices
@@ -16,7 +19,6 @@ FEATURES
   - more sys info
     - gpu 
     - ram speeds
-    - 
 
 BUGS
 

@@ -29,8 +29,7 @@ void RequestIngestor::ingestRequest(const rms::common::thrift::RmsRequest& req,
 
     // Do general ingest stuff Make sure this is done after
     // specific as they take priority
-    // switch (data.data_type) {
-    // }
+    switch (data.data_type) {}
   }
 }
 

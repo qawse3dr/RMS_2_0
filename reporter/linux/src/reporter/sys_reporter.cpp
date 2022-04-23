@@ -45,11 +45,11 @@ struct common::thrift::SystemInfo SysReporter::report() {
                        fs_type_buffer)) {
     storage_info.dev = dev_buffer;
     storage_info.fs_type = fs_type_buffer;
+    storage_info.mount_point = mount_point;
     if (storage_info.dev[0] != '/') continue;
     // Get stats from mount_point
     struct statfs info;
     statfs(mount_point, &info);
-
     storage_info.free =
         info.f_bavail * info.f_bsize / (1000.0 * 1000.0 * 1000.0);
     storage_info.total =
@@ -148,7 +148,7 @@ struct common::thrift::SystemInfo SysReporter::report() {
   common::thrift::VersionData client_version;
   client_version.major = RMS_2_0_REPORTER_MAJOR_VERSION;
   client_version.minor = RMS_2_0_REPORTER_MINOR_VERSION;
-  client_version.release = RMS_2_0_REPORTER_MINOR_VERSION;
+  client_version.release = RMS_2_0_REPORTER_RELEASE_VERSION;
   sys_info.__set_client_version(client_version);
 
   return {sys_info};

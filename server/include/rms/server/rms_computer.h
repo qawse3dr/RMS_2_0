@@ -32,17 +32,23 @@ class UsageContainer {
  private:
   std::deque<double> data_points_ = {};
 
+  // Should the data be summed. if false getData will return the average
+  bool culminating_;
+
  public:
   const UsageType usage_type;
   const int id;
 
-  UsageContainer(UsageType type) : usage_type(type), id(-1) {}
-  UsageContainer(UsageType type, int id) : usage_type(type), id(-1) {}
+  UsageContainer(UsageType type, bool culminating = false)
+      : usage_type(type), id(-1), culminating_(culminating) {}
+  UsageContainer(UsageType type, int id, bool culminating = false)
+      : usage_type(type), id(-1), culminating_(culminating) {}
 
-  // flushes usage to db and resets
-  double getAvg() {
-    return std::reduce(data_points_.begin(), data_points_.end()) /
-           data_points_.size();
+  // returns the result. if culminating_ is true it will return the sum,
+  // or else it will return the average.
+  double getData() {
+    auto sum = std::reduce(data_points_.begin(), data_points_.end());
+    return (culminating_) ? sum : sum / data_points_.size();
   }
   const std::deque<double>& getDataPoints() { return data_points_; }
 
@@ -52,16 +58,19 @@ class UsageContainer {
     data_points_.push_back(point);
   }
 };
+
 /**
  * represents storage in RmsComputer
  */
 struct RmsStorageInfo {
-  int storage_info_id_;
-  std::string dev_path_;
-  std::string fs_type_;
-  unsigned long free_;
-  unsigned long total_;
-  bool connected_;  // does the drive currently exist
+  int storage_info_id_ = -1;
+  std::string dev_path_ = {};
+  std::string fs_type_ = {};
+  std::string mount_point_ = {};
+  unsigned long free_ = 0;
+  unsigned long total_ = 0;
+  bool connected_;      //< Does the drive currently exist.
+  bool dirty_ = false;  //< Does it need to be updated on the db.
 };
 
 /**
@@ -70,13 +79,18 @@ struct RmsStorageInfo {
 struct RmsNetworkIPS {
   bool ipv6_;
   std::string ip;
+
+  // If the ip no longer exists remove it.
+  bool marked_for_delete_ = false;
 };
 struct RmsNetworkInfo {
-  int network_info_id_;
-  std::string interface_name_;
+  int network_info_id_ = -1;
+  std::string interface_name_ = {};
   std::vector<RmsNetworkIPS> ips_;
-  bool connected_;  // does the network device currently exist
+  bool connected_ = false;  // does the network device currently exist
+  bool dirty_ = false;      //< Does it need to be updated on the db.
 };
+
 /**
  * RmsComputer represents a clients computer
  * storing all information needed for the database. almost like a

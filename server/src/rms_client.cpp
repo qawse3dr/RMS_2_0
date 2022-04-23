@@ -41,7 +41,7 @@ int64_t RmsClient::handshake(const int64_t id, const SystemInfo& sys_info) {
   if (id != -1) {
     computer_->getFromDB();
     computer_->setSysInfo(sys_info);
-    // todo update computer
+    computer_->updateDB();
   } else {
     computer_->setSysInfo(sys_info);
     computer_->addToDB();

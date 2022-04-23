@@ -98,12 +98,14 @@ class RmsDatabase {
 
 #define RMS_DB_UPDATE_COMPUTER_TABLE                                           \
   "UPDATE computer_table"                                                      \
-  "SET system_name= " RMS_DB_TYPE_FMT_STRING                                   \
-  "host_name=" RMS_DB_TYPE_FMT_STRING "os_version=" RMS_DB_TYPE_FMT_VERSION    \
-  "client_version=" RMS_DB_TYPE_FMT_VERSION "cpu_name=" RMS_DB_TYPE_FMT_STRING \
-  "cpu_vendor=" RMS_DB_TYPE_FMT_STRING "cpu_core_count=" RMS_DB_TYPE_FMT_INT   \
-  "cpu_cache_size=" RMS_DB_TYPE_FMT_INT "cpu_arch=" RMS_DB_TYPE_FMT_STRING     \
-  " WHERE computer_id =" RMS_DB_TYPE_FMT_INT ";"
+  " SET system_name= " RMS_DB_TYPE_FMT_STRING                                  \
+  ", host_name=" RMS_DB_TYPE_FMT_STRING                                        \
+  ", os_version=" RMS_DB_TYPE_FMT_VERSION                                      \
+  ", client_version=" RMS_DB_TYPE_FMT_VERSION                                  \
+  ", cpu_name=" RMS_DB_TYPE_FMT_STRING ", cpu_vendor=" RMS_DB_TYPE_FMT_STRING  \
+  ", cpu_core_count=" RMS_DB_TYPE_FMT_INT                                      \
+  ", cpu_cache_size=" RMS_DB_TYPE_FMT_INT ", cpu_arch=" RMS_DB_TYPE_FMT_STRING \
+  " WHERE computer_id = " RMS_DB_TYPE_FMT_INT ";"
 
 #define RMS_DB_FETCH_COMPUTER_BY_ID \
   "SELECT * FROM computer_table WHERE computer_id = " RMS_DB_TYPE_FMT_INT
@@ -115,6 +117,7 @@ class RmsDatabase {
   "computer_id INT NOT NULL,"             \
   "dev_path VARCHAR(16),"                 \
   "fs_type VARCHAR(16),"                  \
+  "mount_point VARCHAR(128),"             \
   "free INT,"                             \
   "total INT,"                            \
   "connected INT,"                        \
@@ -124,16 +127,18 @@ class RmsDatabase {
 
 #define RMS_DB_FETCH_STORAGE_BY_COMPUTER_ID \
   "SELECT * FROM storage_table WHERE computer_id = " RMS_DB_TYPE_FMT_INT ";"
-#define RMS_DB_INSERT_STORAGE_TABLE                                          \
-  "INSERT INTO storage_table (computer_id,"                                  \
-  "dev_path, fs_type, free, total, connected) VALUES"                        \
-  "(" RMS_DB_TYPE_FMT_INT "," RMS_DB_TYPE_FMT_STRING                         \
-  "," RMS_DB_TYPE_FMT_STRING "," RMS_DB_TYPE_FMT_INT "," RMS_DB_TYPE_FMT_INT \
-  ",1);"
 
-#define RMS_DB_UPDATE_STORAGE_TABLE                          \
-  "UPDATE storage_table SET free=" RMS_DB_FMT_INT            \
-  " total=" RMS_DB_TYPE_FMT_INT " connected=" RMS_DB_FMT_INT \
+#define RMS_DB_INSERT_STORAGE_TABLE                                \
+  "INSERT INTO storage_table (computer_id,"                        \
+  "dev_path, fs_type, mount_point, free, total, connected) VALUES" \
+  "(" RMS_DB_TYPE_FMT_INT "," RMS_DB_TYPE_FMT_STRING               \
+  "," RMS_DB_TYPE_FMT_STRING "," RMS_DB_TYPE_FMT_STRING            \
+  "," RMS_DB_TYPE_FMT_INT "," RMS_DB_TYPE_FMT_INT ",1);"
+
+#define RMS_DB_UPDATE_STORAGE_TABLE                                           \
+  "UPDATE storage_table SET free=" RMS_DB_TYPE_FMT_INT                        \
+  ", total=" RMS_DB_TYPE_FMT_INT ", connected=" RMS_DB_TYPE_FMT_INT           \
+  ", mount_point=" RMS_DB_TYPE_FMT_STRING ", fs_type=" RMS_DB_TYPE_FMT_STRING \
   " WHERE storage_info_id=" RMS_DB_TYPE_FMT_INT ";"
 
 // Holds all network device info for a device

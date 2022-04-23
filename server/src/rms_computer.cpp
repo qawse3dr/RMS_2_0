@@ -30,10 +30,17 @@ RmsComputer::RmsComputer(const int computer_id) : computer_id_(computer_id) {
 static void StorageInfoToRmsStorageInfo(
     RmsStorageInfo& rms_storage_info,
     const rms::common::thrift::StorageInfo& storage_info) {
+  rms_storage_info.dirty_ =
+      !(storage_info.dev == rms_storage_info.dev_path_ &&
+        rms_storage_info.fs_type_ == storage_info.fs_type &&
+        rms_storage_info.free_ == storage_info.free &&
+        rms_storage_info.total_ == storage_info.total &&
+        rms_storage_info.mount_point_ == storage_info.mount_point);
   rms_storage_info.dev_path_ = storage_info.dev;
   rms_storage_info.fs_type_ = storage_info.fs_type;
   rms_storage_info.free_ = storage_info.free;
   rms_storage_info.total_ = storage_info.total;
+  rms_storage_info.mount_point_ = storage_info.mount_point;
   rms_storage_info.connected_ = true;
 }
 
@@ -50,9 +57,10 @@ void RmsComputer::addStorageDevice(
     }
   }
 
-  // Storage Device Doesn't exist add it
+  // Storage device doesn't exist add it
   RmsStorageInfo info;
   StorageInfoToRmsStorageInfo(info, dev);
+  info.dirty_ = true;
   storage_info_.emplace_back(std::move(info));
 }
 
@@ -111,7 +119,28 @@ bool RmsComputer::addToDB() {
       true);
   if (res.success) {
     setComputerId(res.last_id);
+  } else {
+    std::cerr << "Failed to add computer to db: " << computer_id_ << std::endl;
+    return false;
   }
+  // Add all storage devices
+  for (auto& dev : storage_info_) {
+    auto res = RmsServer::getInstance().getDatabase().executeQuery(
+        fmt::format(RMS_DB_INSERT_STORAGE_TABLE, computer_id_, dev.dev_path_,
+                    dev.fs_type_, dev.mount_point_, dev.free_, dev.total_)
+            .c_str(),
+        true);
+    if (res.success) {
+      dev.storage_info_id_ = res.last_id;
+      dev.dirty_ = false;
+    } else {
+      std::cerr << "Warning: couldn't add " << dev.dev_path_ << " to db"
+                << std::endl;
+      dev.dirty_ = true;
+    }
+  }
+
+  // Add all network devices
 
   return res.success;
 }
@@ -123,7 +152,7 @@ bool RmsComputer::getFromDB() {
   }
   auto res = RmsServer::getInstance().getDatabase().executeQuery(
       fmt::format(RMS_DB_FETCH_COMPUTER_BY_ID, getComputerId()).c_str());
-  if (res.success) {
+  if (res.success && res.table_rows.size() == 1) {
     for (int i = 0; i < res.column_names.size(); i++) {
       if (res.column_names[i] == "system_name") {
         sys_info_.system_name = res.table_rows[0][i];
@@ -163,6 +192,43 @@ bool RmsComputer::getFromDB() {
   } else {
     std::cerr << "Failed to get computer with id " << getComputerId()
               << " From database" << std::endl;
+    if (res.success) {
+      // The db request didn't fail we just couldn't find it.
+      // so try and add it
+      return addToDB();
+    }
+    return false;
+  }
+  res = RmsServer::getInstance().getDatabase().executeQuery(
+      fmt::format(RMS_DB_FETCH_STORAGE_BY_COMPUTER_ID, getComputerId())
+          .c_str());
+  if (res.success && res.table_rows.size() > 0) {
+    for (const auto& row : res.table_rows) {
+      RmsStorageInfo info;
+      for (int i = 0; i < res.column_names.size(); i++) {
+        // Ignore Computer ID we already know that.
+        if (res.column_names[i] == "computer_id") continue;
+
+        if (res.column_names[i] == "storage_info_id") {
+          info.storage_info_id_ = std::stoi(row[i]);
+        } else if (res.column_names[i] == "total") {
+          info.total_ = std::stoi(row[i]);
+        } else if (res.column_names[i] == "dev_path") {
+          info.dev_path_ = row[i];
+        } else if (res.column_names[i] == "fs_type") {
+          info.fs_type_ = row[i];
+        } else if (res.column_names[i] == "mount_point") {
+          info.mount_point_ = row[i];
+        }
+      }
+      // Assume false till a computer updates this to true
+      // with setSysInfo
+      info.connected_ = false;
+      std::cout << info.dev_path_ << std::endl;
+      storage_info_.emplace_back(std::move(info));
+    }
+  } else {
+    std::cerr << "WARN failed to get storage devices" << std::endl;
   }
   return res.success;
 }
@@ -176,15 +242,18 @@ static bool isSysInfoDirty(const SystemInfo& lhs, const SystemInfo& rhs) {
 
 void RmsComputer::setSysInfo(const SystemInfo& sys_info) {
   sys_info_dirty_ = isSysInfoDirty(sys_info_, sys_info);
-  sys_info_ = sys_info;
+  sys_info_ = std::move(sys_info);
 
   // TODO check for changes
-  for (const auto& network_device : sys_info.network_info) {
+  for (const auto& network_device : sys_info_.network_info) {
     addNetworkDevice(network_device);
   }
-  for (const auto& storage_device : sys_info.storage_info) {
+  for (const auto& storage_device : sys_info_.storage_info) {
     addStorageDevice(storage_device);
   }
+  // clear sys_info vectors as we have own internal ones
+  sys_info_.network_info.clear();
+  sys_info_.storage_info.clear();
 }
 std::string RmsComputer::toString() const {
   std::stringstream ss;
@@ -221,7 +290,49 @@ std::string RmsComputer::toString() const {
   return ss.str();
 }
 
-bool RmsComputer::updateDB() { return true; }
+bool RmsComputer::updateDB() {
+  if (getComputerId() == -1) {
+    // TODO add log here
+    std::cerr << "Computer id invalid not updating db" << std::endl;
+    return false;
+  }
+  // Only update if it dirty
+  rms::server::RmsDatabase::RmsQueryResult res;
+  res.success = true;
+  if (sys_info_dirty_) {
+    res = RmsServer::getInstance().getDatabase().executeQuery(
+        fmt::format(
+            RMS_DB_UPDATE_COMPUTER_TABLE, sys_info_.system_name,
+            sys_info_.host_name, sys_info_.os_version.major,
+            sys_info_.os_version.minor, sys_info_.os_version.release,
+            sys_info_.client_version.major, sys_info_.client_version.minor,
+            sys_info_.client_version.release, sys_info_.cpu_info.cpu_name,
+            sys_info_.cpu_info.cpu_vendor_name, sys_info_.cpu_info.cpu_cores,
+            sys_info_.cpu_info.cache_size,
+            rms::common::thrift::to_string(sys_info_.cpu_info.arch),
+            getComputerId())
+            .c_str());
+    if (res.success) {
+      sys_info_dirty_ = false;
+    } else {
+      std::cerr << "Failed to update computer:" << getComputerId() << std::endl;
+    }
+  }
+
+  // Update storage devices
+  for (auto& dev : storage_info_) {
+    if (!dev.dirty_) continue;
+    res = RmsServer::getInstance().getDatabase().executeQuery(
+        fmt::format(RMS_DB_UPDATE_STORAGE_TABLE, dev.free_, dev.total_,
+                    dev.connected_, dev.mount_point_, dev.fs_type_,
+                    dev.storage_info_id_)
+            .c_str());
+    dev.dirty_ = !res.success;
+    std::cout << dev.dev_path_ << std::endl;
+  }
+
+  return res.success;
+}
 
 }  // namespace server
 }  // namespace rms
