@@ -69,6 +69,11 @@ struct RamData {
 
 }
 
+struct Script {
+  1: string filename_,
+  2: string script_data_
+}
+
 // Response
 enum RmsResponseTypes {
   kSendSystemInfo = 0,
@@ -79,8 +84,10 @@ enum RmsResponseTypes {
 
 union RmsReponseValues {
   1: i64 long_,
-  2: string str_
+  2: string cmd_,
+  3: Script script_
 }
+
 struct RmsResponseData {
   1 : required RmsResponseTypes data_type,
   2 : required RmsReponseValues data
