@@ -39,10 +39,15 @@ class UsageContainer {
   const UsageType usage_type;
   const int id;
 
+  // Does the usage table entry for this exists?
+  // ie do we need to check if it exists before
+  // updating it with the tick
+  bool table_exist = false;
+
   UsageContainer(UsageType type, bool culminating = false)
       : usage_type(type), id(-1), culminating_(culminating) {}
   UsageContainer(UsageType type, int id, bool culminating = false)
-      : usage_type(type), id(-1), culminating_(culminating) {}
+      : usage_type(type), id(id), culminating_(culminating) {}
 
   // returns the result. if culminating_ is true it will return the sum,
   // or else it will return the average.
@@ -106,6 +111,7 @@ class RmsComputer {
   std::vector<RmsNetworkInfo> network_info_;
 
   std::vector<UsageContainer> usage_info_;
+  std::mutex usage_mutex_;
 
   // dirty (if the db needs to be updated)
   bool sys_info_dirty_ = false;
@@ -139,16 +145,20 @@ class RmsComputer {
    */
   inline void addUsageInfo(const UsageType type, double data_point,
                            int id = -1) {
+    std::lock_guard<std::mutex> lk(usage_mutex_);
     for (auto& usage : usage_info_) {
       if (usage.usage_type == type && usage.id == id) {
         usage.addPoint(data_point);
         return;
       }
     }
-    // TODO throw exception
+    // Add usage info
+    usage_info_.emplace_back(type, id);
+    usage_info_.back().addPoint(data_point);
   }
 
-  bool pushUsageToDB();
+  /** Pushes all the usage data to the db for given tick*/
+  bool pushUsageToDB(int tick);
 
   /**
    * Adds the computer to the db if it hasn't been provisioned yet

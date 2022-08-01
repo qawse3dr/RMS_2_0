@@ -198,6 +198,11 @@ int RequestClient::handleResponseData(
       std::cout << "Sending sysInfo" << std::endl;
       RmsReporterClient::getInstance().triggerSysConsumer();
       break;
+    case common::thrift::RmsResponseTypes::kRunCommand:
+      RmsReporterClient::getInstance().runCommand(res_data.data.cmd_);
+      break;
+    case common::thrift::RmsResponseTypes::kRunScript:
+      RmsReporterClient::getInstance().runScript(res_data.data.script_);
     default:
       std::cout << "un implemented ResponseType:: "
                 << static_cast<int>(res_data.data_type) << std::endl;

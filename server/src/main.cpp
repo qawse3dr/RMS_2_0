@@ -23,6 +23,8 @@ int main() {
 
   std::cout << "Welcome to RMS (Remote Management System) 2.0" << std::endl;
 
+  // TODO add cmd line args
+
   // This will block till closed exit command in terminal
   rms::server::RmsServer::getInstance().start();
 

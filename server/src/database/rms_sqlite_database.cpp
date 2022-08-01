@@ -99,6 +99,21 @@ RmsDatabase::RmsQueryResult RmsSqliteDatabase::executeQuery(
 
   sqlite3_finalize(sql_res);
 
+#if 1
+  // DEBUGGING prints table
+  std::cout << query << std::endl;
+  for (auto& name : res.column_names) {
+    std::cout << std::setw(15) << name << " ";
+  }
+  std::cout << std::endl << "--------------------------" << std::endl;
+
+  for (auto& row : res.table_rows) {
+    for (auto& row_data : row) {
+      std::cout << std::setw(15) << row_data << " ";
+    }
+    std::cout << std::endl;
+  }
+#endif
   return res;
 }
 

@@ -33,7 +33,7 @@ RmsServer& RmsServer::getInstance() {
 int RmsServer::start() {
   // Load in config
   rms::common::RmsConfig::load(
-      "/home/larry/Programming/C++/RMS_2_0/rms_server.cfg");
+      "/home/larry/Programming/C++/rms_2_0/rms_server.cfg");
 
   // start up db
   std::string db_type = rms::common::RmsConfig::find(RMS_SERVER_CONFIG_DB_TYPE);

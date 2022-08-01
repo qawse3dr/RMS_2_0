@@ -62,5 +62,13 @@ int RmsReporterClient::join() {
 
 void RmsReporterClient::triggerSysConsumer() { request_client_.sendSysInfo(); }
 
+void RmsReporterClient::runScript(const rms::common::thrift::Script& script) {
+  // TODO impl
+}
+
+void RmsReporterClient::runCommand(const std::string& cmd) {
+  // TODO impl
+}
+
 }  // namespace reporter
 }  // namespace rms

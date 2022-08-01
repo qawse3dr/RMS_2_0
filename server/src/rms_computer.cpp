@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <fmt/format.h>
 
+#include <chrono>
 #include <cstring>
 #include <iostream>
 #include <sstream>
@@ -15,14 +16,7 @@ namespace rms {
 namespace server {
 
 /** computer exists use computer_id to fetch the data*/
-RmsComputer::RmsComputer(const int computer_id) : computer_id_(computer_id) {
-  // Create basic usage info
-  usage_info_.emplace_back(UsageType::kNetwork);
-  usage_info_.emplace_back(UsageType::kRam, 0);  // SYS Ram
-  usage_info_.emplace_back(UsageType::kRam, 1);  // Swap
-  usage_info_.emplace_back(UsageType::kCpu, 0);  // master_cpu
-  // TODO add core cpu's
-}
+RmsComputer::RmsComputer(const int computer_id) : computer_id_(computer_id) {}
 
 /**
  * Sets the value for storageInfo into passed RmsStorageInfo
@@ -224,7 +218,6 @@ bool RmsComputer::getFromDB() {
       // Assume false till a computer updates this to true
       // with setSysInfo
       info.connected_ = false;
-      std::cout << info.dev_path_ << std::endl;
       storage_info_.emplace_back(std::move(info));
     }
   } else {
@@ -328,10 +321,86 @@ bool RmsComputer::updateDB() {
                     dev.storage_info_id_)
             .c_str());
     dev.dirty_ = !res.success;
-    std::cout << dev.dev_path_ << std::endl;
   }
 
   return res.success;
+}
+
+bool RmsComputer::pushUsageToDB(const int tick) {
+  std::lock_guard<std::mutex> lk(usage_mutex_);
+
+  const std::chrono::time_point<std::chrono::system_clock> now{
+      std::chrono::system_clock::now()};
+  const std::chrono::year_month_day date{
+      std::chrono::floor<std::chrono::days>(now)};
+  // check for existant of usage data
+  RmsDatabase::RmsQueryResult res;
+  for (auto& usage : usage_info_) {
+    if (usage.id == -1) {
+      if (!usage.table_exist || tick == 0) {
+        res = RmsServer::getInstance().getDatabase().executeQuery(
+            fmt::format(RMS_DB_DOES_USAGE_ENTRY_EXIST,
+                        static_cast<int>(date.year()),
+                        static_cast<unsigned>(date.month()),
+                        static_cast<unsigned>(date.day()),
+                        static_cast<int>(usage.usage_type))
+                .c_str());
+        if (res.table_rows.size() == 0 ||
+            res.table_rows[0][0] == "0") {  // insert table
+          res = RmsServer::getInstance().getDatabase().executeQuery(
+              fmt::format(RMS_DB_INSERT_USAGE_TABLE,
+                          static_cast<int>(date.year()),
+                          static_cast<unsigned>(date.month()),
+                          static_cast<unsigned>(date.day()),
+                          static_cast<int>(usage.usage_type))
+                  .c_str());
+        }
+      }
+      // Insert datapoint into table
+      res = RmsServer::getInstance().getDatabase().executeQuery(
+          fmt::format(RMS_DB_UPDATE_USAGE_TABLE, tick, usage.getData(),
+                      static_cast<int>(date.year()),
+                      static_cast<unsigned>(date.month()),
+                      static_cast<unsigned>(date.day()),
+                      static_cast<int>(usage.usage_type))
+              .c_str());
+    } else {  // same thing but now with id!!!
+      if (!usage.table_exist || tick == 0) {
+        res = RmsServer::getInstance().getDatabase().executeQuery(
+            fmt::format(RMS_DB_DOES_USAGE_ENTRY_EXIST_WITH_ID,
+                        static_cast<int>(date.year()),
+                        static_cast<unsigned>(date.month()),
+                        static_cast<unsigned>(date.day()),
+                        static_cast<int>(usage.usage_type), usage.id)
+                .c_str());
+        if (res.table_rows.size() == 0 ||
+            res.table_rows[0][0] == "0") {  // insert table
+          res = RmsServer::getInstance().getDatabase().executeQuery(
+              fmt::format(RMS_DB_INSERT_USAGE_TABLE_WITH_ID,
+                          static_cast<int>(date.year()),
+                          static_cast<unsigned>(date.month()),
+                          static_cast<unsigned>(date.day()),
+                          static_cast<int>(usage.usage_type), usage.id)
+                  .c_str());
+        }
+      }
+      // Insert datapoint into table
+      res = RmsServer::getInstance().getDatabase().executeQuery(
+          fmt::format(RMS_DB_UPDATE_USAGE_TABLE_WITH_ID, tick, usage.getData(),
+                      static_cast<int>(date.year()),
+                      static_cast<unsigned>(date.month()),
+                      static_cast<unsigned>(date.day()),
+                      static_cast<int>(usage.usage_type), usage.id)
+              .c_str());
+      if (res.success) {
+        std::cout << "added point to table" << std::endl;
+      } else {
+        std::cout << "failed to add point to table" << std::endl;
+      }
+    }
+  }
+
+  return true;
 }
 
 }  // namespace server

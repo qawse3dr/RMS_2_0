@@ -46,6 +46,22 @@ class RmsReporterClient {
 
   void triggerSysConsumer();
 
+  /**
+   * @brief runs a script on the computer given a name and script_data
+   *
+   * @note this method needs to be impl per platform
+   *
+   * @param script
+   */
+  void runScript(const rms::common::thrift::Script& script);
+
+  /**
+   * @brief rusn a command on the client computer
+   *
+   * @param cmd
+   */
+  void runCommand(const std::string& cmd);
+
   inline RequestClient& getRequestClient() { return request_client_; }
 };
 

@@ -21,6 +21,19 @@ class DbRequestIngestor : public RequestIngestor {
  private:
   std::unique_ptr<RmsDatabase> database_;
 
+  // What tick of the day we are on.
+  // If it is set to negative one that means we just booted up.
+  int tick_ = -1;
+
+  /**
+   * @brief When we should send the next tick.
+   * on boot we should set this 5 minutes from now so we have time
+   * to grab atleast 4 or 5 data points for usage. If this conflicts with
+   * the next data point. it just booted not like these point will be that
+   * accurate anyways so who cares.
+   */
+  std::chrono::time_point<std::chrono::steady_clock> next_usage_push_;
+
  protected:
   void ingestRequestHeader(
       const rms::common::thrift::RmsHeader& header) override;

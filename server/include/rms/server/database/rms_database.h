@@ -181,7 +181,7 @@ class RmsDatabase {
   "CREATE TABLE usage_table("     \
   "date DATE NOT NULL,"           \
   "data_type INTEGER NOT NULL,"   \
-  "data_id INTEGER"               \
+  "data_id INTEGER,"              \
   "tick0 FLOAT,"                  \
   "tick1 FLOAT,"                  \
   "tick2 FLOAT,"                  \
@@ -220,11 +220,24 @@ class RmsDatabase {
 
 #define RMS_DB_UPDATE_USAGE_TABLE                          \
   "UPDATE usage_table SET tick{:d}=" RMS_DB_TYPE_FMT_FLOAT \
-  "WHERE date=" RMS_DB_TYPE_FMT_DATE "and data_type=" RMS_DB_TYPE_FMT_INT ";"
+  " WHERE date=" RMS_DB_TYPE_FMT_DATE "and data_type=" RMS_DB_TYPE_FMT_INT ";"
 
-#define RMS_DB_UPDATE_USAGE_TABLE_WITH_ID                                  \
-  "UPDATE usage_table SET tick{:d}=" RMS_DB_TYPE_FMT_FLOAT                 \
-  "WHERE date=" RMS_DB_TYPE_FMT_DATE " and data_type=" RMS_DB_TYPE_FMT_INT \
+#define RMS_DB_UPDATE_USAGE_TABLE_WITH_ID                                   \
+  "UPDATE usage_table SET tick{:d}=" RMS_DB_TYPE_FMT_FLOAT                  \
+  " WHERE date=" RMS_DB_TYPE_FMT_DATE " and data_type=" RMS_DB_TYPE_FMT_INT \
   " and data_id=" RMS_DB_TYPE_FMT_INT ";"
+
+#define RMS_DB_DOES_USAGE_ENTRY_EXIST      \
+  "SELECT COUNT(*) FROM usage_table WHERE" \
+  " date=" RMS_DB_TYPE_FMT_DATE " and data_type=" RMS_DB_TYPE_FMT_INT ";"
+
+#define RMS_DB_DOES_USAGE_ENTRY_EXIST_WITH_ID                         \
+  "SELECT COUNT(*) FROM usage_table WHERE"                            \
+  " date=" RMS_DB_TYPE_FMT_DATE " and data_type=" RMS_DB_TYPE_FMT_INT \
+  " and data_id=" RMS_DB_TYPE_FMT_INT ";"
+
+#define RMS_DB_FETCH_USAGE_TABLE_ON_DATE
+
+#define RMS_DB_FETCH_USAGE_TABLE_ON_DATE_WITH_ID
 
 #endif  // _INCLUDE_RMS_COMMON_RMS_DATABASE_H_

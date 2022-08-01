@@ -29,6 +29,11 @@ int rmsStatus();
 int rmsSendCMD(std::string cmd);
 
 void rmsTerminal() {
+  // TODO refactor to something a little nicer. maybe make a command line api
+  // ie  cmdline.addCommand("name", std::vector<Args>, callback);
+  // and cmdline.addParentCommand("command");
+  //     cmdline.addCommand("name", std::vector<Args>, callback, "parent_name")
+  //     cmdline.start()
   std::string cmd;
   while (RmsServer::isRunning()) {
     /* prompt again */
@@ -81,6 +86,8 @@ void rmsTerminal() {
             res_data.data.long_ = 0;
             // add response
             client->addResponse(std::move(res_data));
+            std::cout << "Get request sent. sys-info being retrieved."
+                      << std::endl;
           } else {
             std::cerr << "Client with id: " << id << " Does not exist"
                       << std::endl;
@@ -92,6 +99,28 @@ void rmsTerminal() {
       } else {
         std::cerr << "Invalid option valid list options are" << std::endl;
         std::cerr << "\t sys-info <id>" << std::endl;
+      }
+    } else if (cmd.starts_with("exec")) {
+      std::stringstream ss(cmd);
+      std::string client_cmd;
+      int id = 0;
+      ss.ignore();
+      ss >> id;
+      auto client = RmsServer::getInstance().getClient(id);
+      if (client != nullptr) {
+        // get command from cmdline
+        while (!ss.eof()) {
+          client_cmd += ss.get();
+        }
+        // Create response data
+        rms::common::thrift::RmsResponseData res_data;
+        res_data.data_type = rms::common::thrift::RmsResponseTypes::kRunCommand;
+        res_data.data.str_ = client_cmd;
+        // add response
+        client->addResponse(std::move(res_data));
+        std::cout << "Get request sent. sys-info being retrieved." << std::endl;
+      } else {
+        std::cerr << "Client with id: " << id << " Does not exist" << std::endl;
       }
     } else if (cmd == "help") {
       std::stringstream out;
@@ -107,8 +136,10 @@ void rmsTerminal() {
           << "\texit            - Close the server" << std::endl
           << "\tclients         - List connected clients" << std::endl
           << "\tinfo <info>     - Gets some info about the client" << std::endl
+          << "\texec <id> <cmd> - Executes a command on the client" << std::endl
           << "\t\t info types:" << std::endl
-          << "\t\t\t client   - print basic info about the client" << std::endl
+          << "\t\t\t client <id>   - print basic info about the client"
+          << std::endl
           << "\tget <req> <cid> - sends some request to the client" << std::endl
           << "\t\t request types:" << std::endl
           << "\t\t\t sys-info - sends a sys-info request" << std::endl;

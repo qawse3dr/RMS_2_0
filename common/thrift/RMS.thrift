@@ -78,7 +78,8 @@ enum RmsResponseTypes {
 
 
 union RmsReponseValues {
-  1: i64 long_
+  1: i64 long_,
+  2: string str_
 }
 struct RmsResponseData {
   1 : required RmsResponseTypes data_type,

@@ -14,9 +14,9 @@ int main() {
   sigaddset(&sig_mask, SIGTERM);
   pthread_sigmask(SIG_BLOCK, &sig_mask, NULL);
 
-  // Reads config
+  // Reads config TODO make not hard coded (probably a command line arg)
   rms::common::RmsConfig::load(
-      "/home/larry/Programming/C++/RMS_2_0/rms_reporter.cfg");
+      "/home/larry/Programming/C++/rms_2_0/rms_reporter.cfg");
 
   rms::reporter::RmsReporterClient::getInstance().start();
 
