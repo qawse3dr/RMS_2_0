@@ -115,7 +115,7 @@ void rmsTerminal() {
         // Create response data
         rms::common::thrift::RmsResponseData res_data;
         res_data.data_type = rms::common::thrift::RmsResponseTypes::kRunCommand;
-        res_data.data.str_ = client_cmd;
+        res_data.data.cmd_ = client_cmd;
         // add response
         client->addResponse(std::move(res_data));
         std::cout << "Get request sent. sys-info being retrieved." << std::endl;

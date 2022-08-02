@@ -259,7 +259,8 @@ std::string RmsComputer::toString() const {
   ss << "Computer client_version:     " << sys_info_.client_version
      << std::endl;
   ss << "Computer cpu_core:   " << sys_info_.cpu_info.cpu_cores << std::endl;
-  ss << "Computer cpu_vendor: " << sys_info_.cpu_info << std::endl;
+  ss << "Computer cpu_vendor: " << sys_info_.cpu_info.cpu_vendor_name
+     << std::endl;
   ss << "Computer Storage Devices" << std::endl;
   for (const RmsStorageInfo& info : storage_info_) {
     ss << "{"

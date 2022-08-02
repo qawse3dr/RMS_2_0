@@ -1,5 +1,7 @@
 # build dir
 build
 
+server.db
+
 # vscode garbage
 .vscode
