@@ -2,7 +2,7 @@
  * (C) Copyright 2021 Larry Milne (https://www.larrycloud.ca)
  *
  * This code is distributed on "AS IS" BASIS,
- * WITHOUT WARRANTINES OR CONDITIONS OF ANY KIND.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -13,8 +13,7 @@
 #include "rms/reporter/common/consumer/sys_consumer.h"
 #include "rms/reporter/common/rms_reporter_client.h"
 
-namespace rms {
-namespace reporter {
+namespace rms::reporter {
 
 SysConsumer::SysConsumer() : Consumer(std::make_unique<SysReporter>()){};
 
@@ -47,5 +46,4 @@ void SysConsumer::triggerConsume() {
   consume_mutex_.unlock();
 }
 
-}  // namespace reporter
-}  // namespace rms
+}  // namespace rms::reporter

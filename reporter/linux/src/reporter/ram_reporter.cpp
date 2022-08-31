@@ -1,9 +1,8 @@
-#include "rms/reporter/platform/reporter/ram_reporter.h"
-
 #include <iostream>
 
-namespace rms {
-namespace reporter {
+#include "rms/reporter/platform/reporter/ram_reporter.h"
+
+namespace rms::reporter {
 
 common::thrift::RamData RamReporter::report() {
   // Ram stats.
@@ -40,5 +39,4 @@ common::thrift::RamData RamReporter::report() {
   return {};
 }
 
-}  // namespace reporter
-}  // namespace rms
+}  // namespace rms::reporter

@@ -6,8 +6,7 @@
 #include "gen-cpp/RMS_types.h"
 #include "rms/reporter/common/reporter/reporter.h"
 
-namespace rms {
-namespace reporter {
+namespace rms::reporter {
 
 /**
  *  Reporter that returns 2 ram usage status
@@ -25,7 +24,6 @@ class RamReporter : public Reporter<common::thrift::RamData> {
   RamReporter&& operator=(RamReporter&&) = delete;
 };
 
-}  // namespace reporter
-}  // namespace rms
+}  // namespace rms::reporter
 
 #endif  // _LINUX_INCLUDE_PLATEFORM_REPORTER_RAM_REPORTER_H_

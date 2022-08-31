@@ -2,7 +2,7 @@
  * (C) Copyright 2021 Larry Milne (https://www.larrycloud.ca)
  *
  * This code is distributed on "AS IS" BASIS,
- * WITHOUT WARRANTINES OR CONDITIONS OF ANY KIND.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -55,8 +55,17 @@ class RmsClient : public rms::common::thrift::RmsReporterServiceIf {
     computer_->setSysInfo(sys_info);
     computer_->updateDB();
   }
+
   /**
-   * adds a response to the reponse queue
+   * Reports the stdout and stderr data for a given executing.
+   */
+  void reportExecutorData(
+      const rms::common::thrift::ExecutorData& data) override {
+    std::cout << data.stdout << std::endl;
+  }
+
+  /**
+   * adds a response to the response queue
    * ie if the rms_terminal asks to the sysinfo, it will add it to the queue
    * and when the next response it sent it will be sent with it
    */

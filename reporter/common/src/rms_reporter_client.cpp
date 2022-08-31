@@ -2,7 +2,7 @@
  * (C) Copyright 2021 Larry Milne (https://www.larrycloud.ca)
  *
  * This code is distributed on "AS IS" BASIS,
- * WITHOUT WARRANTINES OR CONDITIONS OF ANY KIND.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -12,10 +12,10 @@
 #include "rms/reporter/common/consumer/cpu_consumer.h"
 #include "rms/reporter/common/consumer/ram_consumer.h"
 #include "rms/reporter/common/rms_reporter_client.h"
+#include "rms/reporter/platform/executor/command_executor.h"
 #include "rms/reporter/platform/reporter/sys_reporter.h"
 
-namespace rms {
-namespace reporter {
+namespace rms::reporter {
 
 RmsReporterClient& RmsReporterClient::getInstance() {
   static RmsReporterClient client;
@@ -67,8 +67,22 @@ void RmsReporterClient::runScript(const rms::common::thrift::Script& script) {
 }
 
 void RmsReporterClient::runCommand(const std::string& cmd) {
-  // TODO impl
+  static int64_t id = 0;
+  // TODO change so it supports brackets maybe steam from squash
+  id++;
+  std::string exec_cmd = "ls";
+  std::stringstream cmd_ss(cmd);
+  // cmd_ss >> exec_cmd;
+  std::cout << "command " << cmd << std::endl;
+  std::vector<std::string> exec_args = {"ls"};
+
+  std::string arg;
+  while (cmd_ss >> arg) {
+    exec_args.push_back(arg);
+  }
+
+  executors_.emplace(
+      id, std::make_unique<CommandExecutor>(id, exec_cmd, exec_args));
 }
 
-}  // namespace reporter
-}  // namespace rms
+}  // namespace rms::reporter

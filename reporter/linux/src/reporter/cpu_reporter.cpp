@@ -2,14 +2,12 @@
  * (C) Copyright 2021 Larry Milne (https://www.larrycloud.ca)
  *
  * This code is distributed on "AS IS" BASIS,
- * WITHOUT WARRANTINES OR CONDITIONS OF ANY KIND.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-
-#include "rms/reporter/platform/reporter/cpu_reporter.h"
 
 #include <array>
 #include <chrono>
@@ -17,8 +15,9 @@
 #include <memory>
 #include <thread>
 
-namespace rms {
-namespace reporter {
+#include "rms/reporter/platform/reporter/cpu_reporter.h"
+
+namespace rms::reporter {
 
 CpuReporter::CpuReporter(int cpu_core_count)
     : cpu_core_count_(cpu_core_count) {}
@@ -81,5 +80,4 @@ rms::common::thrift::CpuUsageData CpuReporter::report() {
   return data;
 }
 
-}  // namespace reporter
-}  // namespace rms
+}  // namespace rms::reporter

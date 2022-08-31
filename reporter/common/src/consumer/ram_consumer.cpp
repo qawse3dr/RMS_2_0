@@ -7,8 +7,7 @@
 #include "rms/reporter/common/consumer/ram_consumer.h"
 #include "rms/reporter/common/rms_reporter_client.h"
 
-namespace rms {
-namespace reporter {
+namespace rms::reporter {
 
 RamConsumer::RamConsumer() : Consumer(std::make_unique<RamReporter>()) {
   timeout_ =
@@ -41,5 +40,4 @@ void RamConsumer::consume() {
   }
 }
 
-}  // namespace reporter
-}  // namespace rms
+}  // namespace rms::reporter

@@ -2,7 +2,7 @@
  * (C) Copyright 2022 Larry Milne (https://www.larrycloud.ca)
  *
  * This code is distributed on "AS IS" BASIS,
- * WITHOUT WARRANTINES OR CONDITIONS OF ANY KIND.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -51,7 +51,6 @@ struct CpuInfo {
 
 
 // Network
-
 struct NetworkInfo {
   1: string interface_name,
   2: bool is_ipv6,
@@ -60,7 +59,6 @@ struct NetworkInfo {
 
 
 // Ram
-
 struct RamData {
   1: i64 main_total,
   2: i64 main_free,
@@ -70,8 +68,28 @@ struct RamData {
 }
 
 struct Script {
-  1: string filename_,
-  2: string script_data_
+  1: string filename,
+  2: string script_data
+}
+
+struct ExecutorData {
+  1: i64 id, // The ID of the executing client
+  2: string stdout, // The data from the executing client (output)
+  3: string stderr,
+  4: i64 ts
+}
+
+enum ExecutorReturnType {
+  kUnknown,
+  kSuccess,
+  kError,
+  kInternalError
+}
+
+struct ExecutorResult {
+  1: ExecutorReturnType return_type,
+  2: i32 code,
+  3: i64 time_finished
 }
 
 // Response
@@ -84,8 +102,8 @@ enum RmsResponseTypes {
 
 union RmsReponseValues {
   1: i64 long_,
-  2: string cmd_,
-  3: Script script_
+  2: string str_,
+  3: Script script_,
 }
 
 struct RmsResponseData {
@@ -151,7 +169,9 @@ enum RmsRequestTypes {
   kSysInfo = 300,
 
   // Network Info
-  kNetworkUsage,
+  kNetworkUsage = 400,
+
+  kExecutorResult = 500,
 
 
   kUnknown = 1000,
@@ -160,10 +180,10 @@ enum RmsRequestTypes {
 union RmsRequestValues {
   1: RamData ram_data,
   2: CpuUsageData cpu_usage_data,
-
+  3: ExecutorResult executor_result,
   // multi-use types
-  3: string str_,
-  4: i64 long_
+  4: string str_,
+  5: i64 long_
 
 }
 
@@ -199,6 +219,11 @@ service RmsReporterService {
    * a response request
    */
   RmsResponse report(1:RmsRequest request),
+
+  /**
+   * Reports the stdout and stderr data for a given executing.
+   */
+  oneway void reportExecutorData(1:ExecutorData data),
 
 
 }

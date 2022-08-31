@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(SRC_FILES
+    # Executors
+    "src/executor/command_executor.cpp"
+
+    # Reporters
     "src/reporter/ram_reporter.cpp"
     "src/reporter/cpu_reporter.cpp"
     "src/reporter/sys_reporter.cpp"

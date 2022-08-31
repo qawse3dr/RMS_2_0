@@ -6,8 +6,7 @@
 
 #include "rms/reporter/common/reporter/reporter.h"
 
-namespace rms {
-namespace reporter {
+namespace rms::reporter {
 
 class IConsumer {
  public:
@@ -75,7 +74,6 @@ class Consumer : public IConsumer {
   Consumer&& operator=(Consumer&&) = delete;
 };
 
-}  // namespace reporter
-}  // namespace rms
+}  // namespace rms::reporter
 
 #endif  //_INCLUDE_COMMON_CONSUMER_CONSUMER_H_

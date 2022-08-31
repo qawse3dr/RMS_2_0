@@ -2,7 +2,7 @@
  * (C) Copyright 2021 Larry Milne (https://www.larrycloud.ca)
  *
  * This code is distributed on "AS IS" BASIS,
- * WITHOUT WARRANTINES OR CONDITIONS OF ANY KIND.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -15,8 +15,7 @@
 #include "rms/reporter/common/consumer/consumer.h"
 #include "rms/reporter/platform/reporter/cpu_reporter.h"
 
-namespace rms {
-namespace reporter {
+namespace rms::reporter {
 
 class CpuConsumer : public Consumer<CpuReporter> {
  public:
@@ -27,7 +26,6 @@ class CpuConsumer : public Consumer<CpuReporter> {
   void consume() override;
 };
 
-}  // namespace reporter
-}  // namespace rms
+}  // namespace rms::reporter
 
 #endif  // REPORTER_COMMON_CONSUMER_CPU_CONSUMER_H_

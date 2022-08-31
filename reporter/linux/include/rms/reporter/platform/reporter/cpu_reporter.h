@@ -2,7 +2,7 @@
  * (C) Copyright 2021 Larry Milne (https://www.larrycloud.ca)
  *
  * This code is distributed on "AS IS" BASIS,
- * WITHOUT WARRANTINES OR CONDITIONS OF ANY KIND.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -16,8 +16,7 @@
 
 #include "rms/reporter/common/reporter/reporter.h"
 
-namespace rms {
-namespace reporter {
+namespace rms::reporter {
 
 /**
  *  Reporter that returns 2 ram usage status
@@ -39,7 +38,6 @@ class CpuReporter : public Reporter<rms::common::thrift::CpuUsageData> {
   CpuReporter&& operator=(CpuReporter&&) = delete;
 };
 
-}  // namespace reporter
-}  // namespace rms
+}  // namespace rms::reporter
 
 #endif  // LINUX_INCLUDE_PLATFORM_REPORTER_CPU_REPORTER_H_

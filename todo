@@ -1,11 +1,12 @@
 FEATURES
   - execute cmd on computer
   - send info to Database
-    - usage (send once an hour but keep ticks everyone minute)
     - network
     - hdd
     - update databases
-
+  - Create optional callback server for faster updates.
+    - Create its own thrift tcp socket the server can send requests to for example to request
+      sys-info, or to create a virtual remote shell like client.
   - Create Logger or a one maybe as a separate project so i can reuse it for other cpp projects  
   - get usb devices
     maybe use e-bpf to detect new devices so I know when to add
@@ -17,10 +18,12 @@ FEATURES
   - get running services
   - installed pkg's
   - more sys info
-    - gpu 
+    - gpu info
     - ram speeds
-
+    - bios version (If I can get this)
+  
 BUGS
+  - Ticks for data are saving negative numbers... (might have to do how it is saved to db or sent over thrift)
 
 REFACTOR
   - Have a pool of consumers that get jobs given to it

@@ -2,7 +2,7 @@
  * (C) Copyright 2021 Larry Milne (https://www.larrycloud.ca)
  *
  * This code is distributed on "AS IS" BASIS,
- * WITHOUT WARRANTINES OR CONDITIONS OF ANY KIND.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -12,19 +12,22 @@
 #ifndef _INCLUDE_SERVER_RMS_REPORTER_CLIENT_H_
 #define _INCLUDE_SERVER_RMS_REPORTER_CLIENT_H_
 
+#include <iostream>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "gen-cpp/RMS_types.h"
 #include "rms/reporter/common/consumer/consumer.h"
+#include "rms/reporter/common/executor/executor.h"
 #include "rms/reporter/common/request_client.h"
 
-namespace rms {
-namespace reporter {
+namespace rms::reporter {
 
 class RmsReporterClient {
  private:
-  std::vector<std::unique_ptr<IConsumer>> consumers_;
+  std::vector<std::unique_ptr<IConsumer>> consumers_ = {};
+  std::unordered_map<uint64_t, std::unique_ptr<Executor>> executors_ = {};
 
   RequestClient request_client_;
 
@@ -38,7 +41,7 @@ class RmsReporterClient {
   // Starts up the reporter application
   int start();
 
-  // Shutsdown the reporter application
+  // Stops the reporter application
   int stop();
 
   // Waits for all the threads to join
@@ -56,15 +59,23 @@ class RmsReporterClient {
   void runScript(const rms::common::thrift::Script& script);
 
   /**
-   * @brief rusn a command on the client computer
+   * @brief runs a command on the client computer
    *
    * @param cmd
    */
   void runCommand(const std::string& cmd);
 
+  void removeExecutor(int64_t id) {
+    auto it = executors_.find(id);
+    if (it != executors_.end()) {
+      executors_.erase(it);
+    } else {
+      std::cerr << "Error couldn't find executor " << id << std::endl;
+    }
+  }
+
   inline RequestClient& getRequestClient() { return request_client_; }
 };
 
-}  // namespace reporter
-}  // namespace rms
+}  // namespace rms::reporter
 #endif  // _INCLUDE_SERVER_RMS_REPORTER_CLIENT_H_

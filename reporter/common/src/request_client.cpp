@@ -26,8 +26,7 @@ using namespace apache::thrift;
 using namespace apache::thrift::protocol;
 using namespace apache::thrift::transport;
 
-namespace rms {
-namespace reporter {
+namespace rms::reporter {
 
 RequestClient request_client_;
 
@@ -190,7 +189,7 @@ int RequestClient::sendTcpRequest(const common::thrift::RmsRequest& req) {
   return 0;
 }
 
-// Concerts the reponse data into a job and adds it to the job queue
+// Concerts the response data into a job and adds it to the job queue
 int RequestClient::handleResponseData(
     const common::thrift::RmsResponseData& res_data) {
   switch (res_data.data_type) {
@@ -199,7 +198,7 @@ int RequestClient::handleResponseData(
       RmsReporterClient::getInstance().triggerSysConsumer();
       break;
     case common::thrift::RmsResponseTypes::kRunCommand:
-      RmsReporterClient::getInstance().runCommand(res_data.data.cmd_);
+      RmsReporterClient::getInstance().runCommand(res_data.data.str_);
       break;
     case common::thrift::RmsResponseTypes::kRunScript:
       RmsReporterClient::getInstance().runScript(res_data.data.script_);
@@ -210,5 +209,4 @@ int RequestClient::handleResponseData(
   return 0;
 }
 
-}  // namespace reporter
-}  // namespace rms
+}  // namespace rms::reporter

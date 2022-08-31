@@ -14,6 +14,9 @@ set(SRC_FILES
     # Reporter
     "src/request_client.cpp"
 
+    # Executor
+    "src/executor/executor.cpp"
+
 )
 add_executable(rms_reporter ${SRC_FILES})
 target_link_libraries(rms_reporter rms_platform pthread rms_common)

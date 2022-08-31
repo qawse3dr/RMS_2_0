@@ -1,5 +1,14 @@
-#ifndef _COMMON_INCLUDE_RMS_COMMON_HTTP_CLIENT_H_
-#define _COMMON_INCLUDE_RMS_COMMON_HTTP_CLIENT_H_
+/*
+ * (C) Copyright 2021-2022 Larry Milne (https://www.larrycloud.ca)
+ *
+ * This code is distributed on "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author: qawse3dr a.k.a Larry Milne
+ */
+#pragma once
 
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TSocket.h>
@@ -13,10 +22,10 @@
 
 #include "gen-cpp/RMS_types.h"
 #include "gen-cpp/RmsReporterService.h"
+#include "rms/common/util.h"
 #include "rms/reporter/platform/reporter/sys_reporter.h"
 
-namespace rms {
-namespace reporter {
+namespace rms::reporter {
 
 enum class RequestProtocol { kTCP, kHTTP, kLOG };
 
@@ -58,7 +67,7 @@ class RequestClient {
    * if config doesn't contain the computer_id it will also send sys_info data
    * so the computer has a base line
    * it it does have computer_id it will still send sys_info_data but to see if
-   * anyting has changed about the setup ie (hdd was added or one was taken
+   * anything has changed about the setup ie (hdd was added or one was taken
    * out).
    */
   int handshakeTCP();
@@ -68,8 +77,8 @@ class RequestClient {
   ~RequestClient() {}
 
   /**
-   * Sends a request with a given protocal currently only kLog and kTCP are
-   *supported if need be http might be added in the future
+   * Sends a request with a given protocol currently only kLog and kTCP are
+   * supported if need be http might be added in the future
    **/
   void sendRequest(const RequestProtocol& type,
                    common::thrift::RmsRequest&& req);
@@ -82,9 +91,16 @@ class RequestClient {
   void start();
   void join();
   void stop();
+
+  void reportExecutorData(int id, const std::string& out,
+                          const std::string& err) {
+    rms::common::thrift::ExecutorData data;
+    data.__set_id(id);
+    data.__set_ts(rms::common::getTimestamp());
+    if (!out.empty()) data.__set_stdout(out);
+    if (!err.empty()) data.__set_stderr(err);
+    client_->send_reportExecutorData(data);
+  }
 };
 
-}  // namespace reporter
-}  // namespace rms
-
-#endif  // _COMMON_INCLUDE_RMS_COMMON_HTTP_CLIENT_H_
+}  // namespace rms::reporter

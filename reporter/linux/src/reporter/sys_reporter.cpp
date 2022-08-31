@@ -2,7 +2,7 @@
  * (C) Copyright 2021 Larry Milne (https://www.larrycloud.ca)
  *
  * This code is distributed on "AS IS" BASIS,
- * WITHOUT WARRANTINES OR CONDITIONS OF ANY KIND.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -22,8 +22,7 @@
 #include "rms/common/rms_version_info.h"
 #include "rms/reporter/platform/reporter/sys_reporter.h"
 
-namespace rms {
-namespace reporter {
+namespace rms::reporter {
 
 struct common::thrift::SystemInfo SysReporter::report() {
   common::thrift::SystemInfo sys_info;
@@ -154,5 +153,4 @@ struct common::thrift::SystemInfo SysReporter::report() {
   return {sys_info};
 }
 
-}  // namespace reporter
-}  // namespace rms
+}  // namespace rms::reporter

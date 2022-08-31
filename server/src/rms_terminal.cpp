@@ -2,7 +2,7 @@
  * (C) Copyright 2021 Larry Milne (https://www.larrycloud.ca)
  *
  * This code is distributed on "AS IS" BASIS,
- * WITHOUT WARRANTINES OR CONDITIONS OF ANY KIND.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -79,7 +79,7 @@ void rmsTerminal() {
         if (sscanf(cmd.c_str(), "get sys-info %d", &id) != EOF) {
           auto client = RmsServer::getInstance().getClient(id);
           if (client != nullptr) {
-            // Create reponse data
+            // Create response data
             rms::common::thrift::RmsResponseData res_data;
             res_data.data_type =
                 rms::common::thrift::RmsResponseTypes::kSendSystemInfo;
@@ -104,8 +104,8 @@ void rmsTerminal() {
       std::stringstream ss(cmd);
       std::string client_cmd;
       int id = 0;
-      ss.ignore();
-      ss >> id;
+      ss >> client_cmd >> id;
+      client_cmd = "";
       auto client = RmsServer::getInstance().getClient(id);
       if (client != nullptr) {
         // get command from cmdline
@@ -115,10 +115,11 @@ void rmsTerminal() {
         // Create response data
         rms::common::thrift::RmsResponseData res_data;
         res_data.data_type = rms::common::thrift::RmsResponseTypes::kRunCommand;
-        res_data.data.cmd_ = client_cmd;
+        res_data.data.str_ = client_cmd;
+        std::cout << "running" << res_data.data.str_ << std::endl;
         // add response
         client->addResponse(std::move(res_data));
-        std::cout << "Get request sent. sys-info being retrieved." << std::endl;
+        std::cout << "Running command." << client_cmd << std::endl;
       } else {
         std::cerr << "Client with id: " << id << " Does not exist" << std::endl;
       }
