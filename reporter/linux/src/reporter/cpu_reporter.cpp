@@ -66,7 +66,7 @@ rms::common::thrift::CpuUsageData CpuReporter::report() {
   data.usage.push_back(100.0f * (used - baseline_used[0]) /
                        (total - baseline_total[0]));
 
-  for (int i = 0; i < cpu_core_count_; i++) {
+  for (int i = 1; i <= cpu_core_count_; i++) {
     fscanf(fp, "cpu%*d %ld %ld %ld %ld %ld %ld %ld %*ld %*ld %*ld\n", &user,
            &nice, &system, &idle, &iowait, &irq, &softirq);
     total = user + nice + system + idle + iowait + irq + softirq;

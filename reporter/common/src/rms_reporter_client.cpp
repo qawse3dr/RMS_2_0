@@ -8,6 +8,7 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
+#include "rms/common/rms_config.h"
 #include "rms/common/util.h"
 #include "rms/reporter/common/consumer/cpu_consumer.h"
 #include "rms/reporter/common/consumer/ram_consumer.h"
@@ -23,7 +24,7 @@ RmsReporterClient& RmsReporterClient::getInstance() {
 }
 
 RmsReporterClient::RmsReporterClient() {
-  // Read from config to find all consumers
+  // TODO Read from config to find all consumers
 
   // Get base sysinfo
   rms::reporter::SysReporter sys_reporter;
@@ -68,21 +69,13 @@ void RmsReporterClient::runScript(const rms::common::thrift::Script& script) {
 
 void RmsReporterClient::runCommand(const std::string& cmd) {
   static int64_t id = 0;
-  // TODO change so it supports brackets maybe steam from squash
   id++;
-  std::string exec_cmd = "ls";
-  std::stringstream cmd_ss(cmd);
-  // cmd_ss >> exec_cmd;
-  std::cout << "command " << cmd << std::endl;
-  std::vector<std::string> exec_args = {"ls"};
-
-  std::string arg;
-  while (cmd_ss >> arg) {
-    exec_args.push_back(arg);
+  auto shell = rms::common::RmsConfig::find(RMS_REPORTER_CONFIG_EXECUTOR_SHELL);
+  if (shell.empty()) {
+    shell = "bash";  // default to bash
   }
 
-  executors_.emplace(
-      id, std::make_unique<CommandExecutor>(id, exec_cmd, exec_args));
+  executors_.emplace(id, std::make_unique<CommandExecutor>(id, cmd, shell));
 }
 
 }  // namespace rms::reporter

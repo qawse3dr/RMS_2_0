@@ -330,29 +330,23 @@ bool RmsComputer::updateDB() {
 bool RmsComputer::pushUsageToDB(const int tick) {
   std::lock_guard<std::mutex> lk(usage_mutex_);
 
-  const std::chrono::time_point<std::chrono::system_clock> now{
-      std::chrono::system_clock::now()};
-  const std::chrono::year_month_day date{
-      std::chrono::floor<std::chrono::days>(now)};
+  std::time_t tt = std::time(nullptr);
+  std::tm* date = std::localtime(&tt);
   // check for existant of usage data
   RmsDatabase::RmsQueryResult res;
   for (auto& usage : usage_info_) {
     if (usage.id == -1) {
       if (!usage.table_exist || tick == 0) {
         res = RmsServer::getInstance().getDatabase().executeQuery(
-            fmt::format(RMS_DB_DOES_USAGE_ENTRY_EXIST,
-                        static_cast<int>(date.year()),
-                        static_cast<unsigned>(date.month()),
-                        static_cast<unsigned>(date.day()),
+            fmt::format(RMS_DB_DOES_USAGE_ENTRY_EXIST, date->tm_year + 1900,
+                        date->tm_mon + 1, date->tm_mday,
                         static_cast<int>(usage.usage_type))
                 .c_str());
         if (res.table_rows.size() == 0 ||
             res.table_rows[0][0] == "0") {  // insert table
           res = RmsServer::getInstance().getDatabase().executeQuery(
-              fmt::format(RMS_DB_INSERT_USAGE_TABLE,
-                          static_cast<int>(date.year()),
-                          static_cast<unsigned>(date.month()),
-                          static_cast<unsigned>(date.day()),
+              fmt::format(RMS_DB_INSERT_USAGE_TABLE, date->tm_year + 1900,
+                          date->tm_mon + 1, date->tm_mday,
                           static_cast<int>(usage.usage_type))
                   .c_str());
         }
@@ -360,27 +354,21 @@ bool RmsComputer::pushUsageToDB(const int tick) {
       // Insert datapoint into table
       res = RmsServer::getInstance().getDatabase().executeQuery(
           fmt::format(RMS_DB_UPDATE_USAGE_TABLE, tick, usage.getData(),
-                      static_cast<int>(date.year()),
-                      static_cast<unsigned>(date.month()),
-                      static_cast<unsigned>(date.day()),
+                      date->tm_year + 1900, date->tm_mon + 1, date->tm_mday,
                       static_cast<int>(usage.usage_type))
               .c_str());
     } else {  // same thing but now with id!!!
       if (!usage.table_exist || tick == 0) {
         res = RmsServer::getInstance().getDatabase().executeQuery(
             fmt::format(RMS_DB_DOES_USAGE_ENTRY_EXIST_WITH_ID,
-                        static_cast<int>(date.year()),
-                        static_cast<unsigned>(date.month()),
-                        static_cast<unsigned>(date.day()),
+                        date->tm_year + 1900, date->tm_mon + 1, date->tm_mday,
                         static_cast<int>(usage.usage_type), usage.id)
                 .c_str());
         if (res.table_rows.size() == 0 ||
             res.table_rows[0][0] == "0") {  // insert table
           res = RmsServer::getInstance().getDatabase().executeQuery(
               fmt::format(RMS_DB_INSERT_USAGE_TABLE_WITH_ID,
-                          static_cast<int>(date.year()),
-                          static_cast<unsigned>(date.month()),
-                          static_cast<unsigned>(date.day()),
+                          date->tm_year + 1900, date->tm_mon + 1, date->tm_mday,
                           static_cast<int>(usage.usage_type), usage.id)
                   .c_str());
         }
@@ -388,9 +376,7 @@ bool RmsComputer::pushUsageToDB(const int tick) {
       // Insert datapoint into table
       res = RmsServer::getInstance().getDatabase().executeQuery(
           fmt::format(RMS_DB_UPDATE_USAGE_TABLE_WITH_ID, tick, usage.getData(),
-                      static_cast<int>(date.year()),
-                      static_cast<unsigned>(date.month()),
-                      static_cast<unsigned>(date.day()),
+                      date->tm_year + 1900, date->tm_mon + 1, date->tm_mday,
                       static_cast<int>(usage.usage_type), usage.id)
               .c_str());
       if (res.success) {

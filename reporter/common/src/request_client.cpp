@@ -30,8 +30,7 @@ namespace rms::reporter {
 
 RequestClient request_client_;
 
-RequestClient::RequestClient()
-    : rw_semaphore_(1), request_counter_(0), poll_requests_(false) {}
+RequestClient::RequestClient() : request_counter_(0), poll_requests_(false) {}
 
 std::mutex logger_mutex;
 
@@ -54,9 +53,10 @@ int RequestClient::sendHttpRequest(const RmsRequest& req) { return 0; }
 
 void RequestClient::sendRequest(const RequestProtocol& type, RmsRequest&& req) {
   // Critical write
-  rw_semaphore_.acquire();
-  request_queue_.emplace(std::make_tuple(type, req));
-  rw_semaphore_.release();
+  {
+    std::lock_guard<std::mutex> lk{mtx_};
+    request_queue_.emplace(std::make_tuple(type, req));
+  }
 
   // Add a request to semaphore
   request_counter_.release();
@@ -72,7 +72,7 @@ void RequestClient::pollRequests() {
     request_counter_.acquire();
 
     if (poll_requests_.load() == false) break;
-    rw_semaphore_.acquire();
+    std::lock_guard<std::mutex> lk{mtx_};
 
     std::tuple<RequestProtocol, RmsRequest>& req = request_queue_.front();
     switch (std::get<GET_REQUEST_TYPE>(req)) {
@@ -96,12 +96,9 @@ void RequestClient::pollRequests() {
       request_counter_.release();
       handshakeTCP();
       if (!poll_requests_) {
-        rw_semaphore_.release();
         break;
       }
     }
-    // Dont release till after wait to stop queue from filling up
-    rw_semaphore_.release();
   }
 }
 

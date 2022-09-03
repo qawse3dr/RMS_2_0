@@ -24,7 +24,7 @@ void RequestIngestor::ingestRequest(const rms::common::thrift::RmsRequest& req,
                                     std::shared_ptr<RmsComputer>& computer) {
   // Ingest Request (ingestors will add response data)
   ingestRequestHeader(req.header);
-  for (rms::common::thrift::RmsRequestData data : req.data) {
+  for (const rms::common::thrift::RmsRequestData& data : req.data) {
     ingestRequestData(data, res, computer);
 
     // Do general ingest stuff Make sure this is done after

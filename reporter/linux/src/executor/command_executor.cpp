@@ -15,9 +15,9 @@
 
 namespace rms::reporter {
 
-CommandExecutor::CommandExecutor(int id, std::string cmd,
-                                 std::vector<std::string> args)
-    : Executor(id), command_(cmd), arguments_(args) {
+CommandExecutor::CommandExecutor(int id, const std::string& cmd,
+                                 const std::string& shell)
+    : Executor(id), command_(cmd), shell_(shell) {
   process_thread_ = std::thread(&CommandExecutor::runCommand, this);
 }
 
@@ -36,7 +36,6 @@ CommandExecutor::~CommandExecutor() {
 std::string CommandExecutor::getType() const { return "unix_command_executor"; }
 
 void CommandExecutor::runCommand() {
-  std::cout << "exec " << command_ << std::endl;
   // Setup all of the pipes
 
   int stdin_pipes[2];
@@ -48,12 +47,12 @@ void CommandExecutor::runCommand() {
   int stderr_pipes[2];
   pipe(stderr_pipes);
 
-  char* c_args[arguments_.size() + 1];
   auto pid = fork();
   if (pid == 0) {
     // child
 
     // close our fd's
+    // and replace with the fd's we need
     close(STDIN_FILENO);
     dup(stdin_pipes[0]);
     close(STDOUT_FILENO);
@@ -61,7 +60,6 @@ void CommandExecutor::runCommand() {
     close(STDERR_FILENO);
     dup(stderr_pipes[1]);
 
-    // replace with the fd's we need
     // close all the pipes we don't need
     close(stdin_pipes[0]);
     close(stdin_pipes[1]);
@@ -70,11 +68,8 @@ void CommandExecutor::runCommand() {
     close(stderr_pipes[0]);
     close(stderr_pipes[1]);
 
-    c_args[arguments_.size()] = nullptr;
-    for (size_t idx = 0; idx < arguments_.size(); idx++) {
-      c_args[idx] = arguments_[idx].data();
-    }
-    int ret = execvp(command_.data(), c_args);
+    int ret =
+        execlp(shell_.c_str(), shell_.c_str(), "-c", command_.c_str(), nullptr);
     perror("exec");
   } else {
     if (pipe(signal_fd_) < 0) {
@@ -103,41 +98,36 @@ void CommandExecutor::runCommand() {
   // reading output
   bool running = true;
   while (running) {
-    // set fd set
-    // fd_set select_fds;
-    // FD_ZERO(&select_fds);
-    // FD_SET(signal_fd_[0], &select_fds);
-    // FD_SET(stdout_read_fd, &select_fds);
-    // FD_SET(stderr_read_fd, &select_fds);
-
     // Sleep to allow gathering of data
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    char buffer[1024];
+    char buffer[1024 * 64];
 
     pollfd poll_fd[3] = {0};
 
-    poll_fd[2].fd = signal_fd_[0];
-    poll_fd[2].events = POLLIN;
-    poll_fd[2].revents = 0;
-
+    // stdout
     poll_fd[0].fd = stdout_read_fd;
     poll_fd[0].events = POLLIN;
     poll_fd[0].revents = 0;
 
+    // stderr
     poll_fd[1].fd = stderr_read_fd;
     poll_fd[1].events = POLLIN;
     poll_fd[1].revents = 0;
+
+    // signal
+    poll_fd[2].fd = signal_fd_[0];
+    poll_fd[2].events = POLLIN;
+    poll_fd[2].revents = 0;
 
     int ret = poll(poll_fd, 2, -1);
 
     if (ret == -1) {
       perror("select()");
     } else if (ret) {
-      std::cout << "going into read" << std::endl;
       // check stdout
       if (poll_fd[0].revents & POLLIN) {
-        ret = read(stdout_read_fd, buffer, 1024);
+        ret = read(stdout_read_fd, buffer, 1024 * 64);
         if (ret < 0) {
           break;
         }
@@ -150,7 +140,7 @@ void CommandExecutor::runCommand() {
 
       // check stderr
       if (poll_fd[1].revents & POLLIN) {
-        read(stderr_read_fd, buffer, 1024);
+        read(stderr_read_fd, buffer, 1024 * 64);
         err = buffer;
       }
       if (poll_fd[1].revents & POLLIN || poll_fd[0].revents & POLLIN) {
@@ -178,7 +168,6 @@ void CommandExecutor::runCommand() {
     close(signal_fd_[1]);
     signal_fd_[0] = -1;
   }
-  std::cout << " exiting" << std::endl;
 }
 
 void CommandExecutor::input(std::string stdin_input) {

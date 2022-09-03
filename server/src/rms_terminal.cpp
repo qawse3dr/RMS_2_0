@@ -103,23 +103,21 @@ void rmsTerminal() {
     } else if (cmd.starts_with("exec")) {
       std::stringstream ss(cmd);
       std::string client_cmd;
-      int id = 0;
+      int id = -1;
       ss >> client_cmd >> id;
-      client_cmd = "";
       auto client = RmsServer::getInstance().getClient(id);
       if (client != nullptr) {
         // get command from cmdline
-        while (!ss.eof()) {
-          client_cmd += ss.get();
-        }
+        std::getline(ss, client_cmd);
+
         // Create response data
         rms::common::thrift::RmsResponseData res_data;
         res_data.data_type = rms::common::thrift::RmsResponseTypes::kRunCommand;
-        res_data.data.str_ = client_cmd;
-        std::cout << "running" << res_data.data.str_ << std::endl;
+        res_data.data.__set_str_(client_cmd);
+
         // add response
         client->addResponse(std::move(res_data));
-        std::cout << "Running command." << client_cmd << std::endl;
+        std::cout << "Running command: " << client_cmd << std::endl;
       } else {
         std::cerr << "Client with id: " << id << " Does not exist" << std::endl;
       }

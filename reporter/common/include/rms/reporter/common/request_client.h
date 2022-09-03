@@ -16,6 +16,7 @@
 
 #include <atomic>
 #include <functional>
+#include <mutex>
 #include <queue>
 #include <semaphore>
 #include <thread>
@@ -32,7 +33,7 @@ enum class RequestProtocol { kTCP, kHTTP, kLOG };
 class RequestClient {
  private:
   // Semaphores for requests
-  std::binary_semaphore rw_semaphore_;
+  std::mutex mtx_;
   std::binary_semaphore request_counter_;
   std::atomic_bool poll_requests_;
   std::thread work_thread_;

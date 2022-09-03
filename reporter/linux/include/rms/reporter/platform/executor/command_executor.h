@@ -23,8 +23,8 @@ class CommandExecutor : public Executor {
  private:
   /// Command being executed
   std::string command_;
-  /// Arguments passed to the executed command
-  std::vector<std::string> arguments_;
+  /// shell used to execute the command
+  std::string shell_;
 
   // stdout
   std::stringstream stdout_ = {};
@@ -53,9 +53,9 @@ class CommandExecutor : public Executor {
    *
    * @param id
    * @param cmd
-   * @param args
+   * @param shell the shell interpreter that should be used to run the command
    */
-  CommandExecutor(int id, std::string cmd, std::vector<std::string> args);
+  CommandExecutor(int id, const std::string& cmd, const std::string& shell);
   ~CommandExecutor();
 
   // Delete move and copy constructors because this* will be passed

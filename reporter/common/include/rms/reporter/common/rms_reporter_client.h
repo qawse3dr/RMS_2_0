@@ -9,8 +9,7 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
-#ifndef _INCLUDE_SERVER_RMS_REPORTER_CLIENT_H_
-#define _INCLUDE_SERVER_RMS_REPORTER_CLIENT_H_
+#pragma once
 
 #include <iostream>
 #include <memory>
@@ -78,4 +77,3 @@ class RmsReporterClient {
 };
 
 }  // namespace rms::reporter
-#endif  // _INCLUDE_SERVER_RMS_REPORTER_CLIENT_H_
