@@ -9,12 +9,12 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
+#include "rms/common/util.h"
+
 #include <arpa/inet.h>
 
 #include <ctime>
 #include <iostream>
-
-#include "rms/common/util.h"
 
 namespace rms {
 namespace common {

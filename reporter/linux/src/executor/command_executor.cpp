@@ -120,7 +120,7 @@ void CommandExecutor::runCommand() {
     poll_fd[2].events = POLLIN;
     poll_fd[2].revents = 0;
 
-    int ret = poll(poll_fd, 2, -1);
+    int ret = poll(poll_fd, 3, -1);
 
     if (ret == -1) {
       perror("select()");
@@ -132,17 +132,17 @@ void CommandExecutor::runCommand() {
           break;
         }
         out = buffer;
-      } else if (poll_fd[0].revents & POLLRDHUP ||
-                 poll_fd[0].revents & POLLERR || poll_fd[0].revents & POLLHUP) {
-        // closed break
-        break;
       }
 
       // check stderr
       if (poll_fd[1].revents & POLLIN) {
         read(stderr_read_fd, buffer, 1024 * 64);
+        if (ret < 0) {
+          break;
+        }
         err = buffer;
       }
+
       if (poll_fd[1].revents & POLLIN || poll_fd[0].revents & POLLIN) {
         RmsReporterClient::getInstance().getRequestClient().reportExecutorData(
             id_, out, err);
@@ -151,6 +151,11 @@ void CommandExecutor::runCommand() {
         err.clear();
       }
 
+      if (poll_fd[0].revents & POLLRDHUP || poll_fd[0].revents & POLLERR ||
+          poll_fd[0].revents & POLLHUP) {
+        // closed break
+        break;
+      }
       // check signal last to make sure all data was flushed
       if (poll_fd[2].revents & POLLIN) {
         break;
@@ -168,6 +173,9 @@ void CommandExecutor::runCommand() {
     close(signal_fd_[1]);
     signal_fd_[0] = -1;
   }
+
+  // Finished executing notify server
+  notifyEnd();
 }
 
 void CommandExecutor::input(std::string stdin_input) {

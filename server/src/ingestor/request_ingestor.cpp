@@ -8,8 +8,9 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-#include "rms/common/util.h"
 #include "rms/server/ingestor/request_ingestor.h"
+
+#include "rms/common/util.h"
 
 using rms::common::thrift::RmsRequestTypes;
 

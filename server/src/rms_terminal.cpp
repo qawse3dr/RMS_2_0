@@ -110,13 +110,7 @@ void rmsTerminal() {
         // get command from cmdline
         std::getline(ss, client_cmd);
 
-        // Create response data
-        rms::common::thrift::RmsResponseData res_data;
-        res_data.data_type = rms::common::thrift::RmsResponseTypes::kRunCommand;
-        res_data.data.__set_str_(client_cmd);
-
-        // add response
-        client->addResponse(std::move(res_data));
+        client->runCommand(client_cmd);
         std::cout << "Running command: " << client_cmd << std::endl;
       } else {
         std::cerr << "Client with id: " << id << " Does not exist" << std::endl;

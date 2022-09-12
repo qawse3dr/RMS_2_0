@@ -11,6 +11,7 @@
 #include "rms/common/rms_config.h"
 #include "rms/common/util.h"
 #include "rms/reporter/common/consumer/cpu_consumer.h"
+#include "rms/reporter/common/consumer/ping_consumer.h"
 #include "rms/reporter/common/consumer/ram_consumer.h"
 #include "rms/reporter/common/rms_reporter_client.h"
 #include "rms/reporter/platform/executor/command_executor.h"
@@ -33,6 +34,7 @@ RmsReporterClient::RmsReporterClient() {
   consumers_.emplace_back(std::make_unique<rms::reporter::CpuConsumer>(
       static_cast<int>(sys_info.cpu_info.cpu_cores) * 2));
   consumers_.emplace_back(std::make_unique<rms::reporter::RamConsumer>());
+  consumers_.emplace_back(std::make_unique<rms::reporter::PingConsumer>());
 }
 
 int RmsReporterClient::start() {
@@ -67,15 +69,14 @@ void RmsReporterClient::runScript(const rms::common::thrift::Script& script) {
   // TODO impl
 }
 
-void RmsReporterClient::runCommand(const std::string& cmd) {
-  static int64_t id = 0;
-  id++;
+void RmsReporterClient::runCommand(const rms::common::thrift::Command& cmd) {
   auto shell = rms::common::RmsConfig::find(RMS_REPORTER_CONFIG_EXECUTOR_SHELL);
   if (shell.empty()) {
     shell = "bash";  // default to bash
   }
 
-  executors_.emplace(id, std::make_unique<CommandExecutor>(id, cmd, shell));
+  executors_.emplace(
+      cmd.id, std::make_unique<CommandExecutor>(cmd.id, cmd.command, shell));
 }
 
 }  // namespace rms::reporter

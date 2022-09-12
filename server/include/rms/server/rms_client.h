@@ -70,6 +70,14 @@ class RmsClient : public rms::common::thrift::RmsReporterServiceIf {
    * and when the next response it sent it will be sent with it
    */
   void addResponse(rms::common::thrift::RmsResponseData&& res);
+
+  /**
+   * @brief Runs a command on the client
+   *
+   * @param cmd cmd to run
+   */
+  void runCommand(const std::string& cmd);
+
   inline const int& getId() const { return computer_->getComputerId(); }
   inline const std::string& getName() const {
     return computer_->getSysInfo().host_name;

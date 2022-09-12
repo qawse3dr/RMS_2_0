@@ -9,6 +9,8 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
+#include "rms/reporter/platform/reporter/sys_reporter.h"
+
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <string.h>
@@ -20,7 +22,6 @@
 #include <iostream>
 
 #include "rms/common/rms_version_info.h"
-#include "rms/reporter/platform/reporter/sys_reporter.h"
 
 namespace rms::reporter {
 
