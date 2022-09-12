@@ -1,9 +1,12 @@
 FEATURES
-  - execute cmd on computer
+  - execute script on computer
+    - have a folder which holds all the script names (set in cfg)
+    - send the script data over thrift then saved in a tmp dir on the target which get's deleted
+      after running (maybe make deleting an option)
+  
   - send info to Database
     - network
-    - hdd
-    - update databases
+    - network usage
   - Create optional callback server for faster updates.
     - Create its own thrift tcp socket the server can send requests to for example to request
       sys-info, or to create a virtual remote shell like client.
@@ -23,10 +26,11 @@ FEATURES
     - bios version (If I can get this)
   
 BUGS
-  - Ticks for data are saving negative numbers... (might have to do how it is saved to db or sent over thrift)
+  - if the server dies the client will endlessly try to reconnect (expected)
+    but ctrl + C doesn't work (not expected)
+
 
 REFACTOR
   - Have a pool of consumers that get jobs given to it
     having a thread per consumer could be wasting performance so a queue job might
     be useful to decrease thread count without losing performance.
-  - figure a better way to sleep besides sleep (maybe sleep for timeout but in 1 second intervals)

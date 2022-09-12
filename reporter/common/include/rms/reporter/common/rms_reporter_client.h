@@ -62,7 +62,7 @@ class RmsReporterClient {
    *
    * @param cmd
    */
-  void runCommand(const std::string& cmd);
+  void runCommand(const rms::common::thrift::Command& cmd);
 
   void removeExecutor(int64_t id) {
     auto it = executors_.find(id);

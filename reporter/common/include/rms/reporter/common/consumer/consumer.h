@@ -16,7 +16,7 @@ class IConsumer {
 };
 
 /**
- * A consummer should have 4 main methods
+ * A consumer should have 4 main methods
  * parent class methods:
  *   start - starts up the consume in a work thread
  *   stop - kills the work thread and doesn any shutdown work

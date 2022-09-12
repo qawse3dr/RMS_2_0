@@ -53,6 +53,8 @@ class RmsConfig {
 #define RMS_REPORTER_CONFIG_SERVER_IP "server_ip"
 #define RMS_REPORTER_CONFIG_SERVER_PORT "server_port"
 #define RMS_REPORTER_CONFIG_TIMEOUT "timeout"
+#define RMS_REPORTER_CONFIG_PING_TIMEOUT "ping_timeout"
+
 #define RMS_REPORTER_CONFIG_EXECUTOR_SHELL "shell"
 
 // Server Configs

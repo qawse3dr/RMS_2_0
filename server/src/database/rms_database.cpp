@@ -44,6 +44,9 @@ void RmsDatabase::createTables() {
     res = executeQuery(RMS_DB_CREATE_USAGE_TABLE);
     if (!res.success) break;
 
+    res = executeQuery(RMS_DB_CREATE_EXECUTOR_TABLE);
+    if (!res.success) break;
+
     break;
   }
 

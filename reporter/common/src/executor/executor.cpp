@@ -44,10 +44,14 @@ bool Executor::sendOutput(const std::stringstream& out,
 void Executor::notifyEnd() {
   rms::common::thrift::RmsRequest res;
   rms::common::thrift::RmsRequestData data;
+  rms::common::thrift::ExecutorResult executor_result;
+
   data.__set_data_type(rms::common::thrift::RmsRequestTypes::kExecutorResult);
-  data.data.executor_result.__set_code(return_code_);
-  data.data.executor_result.__set_return_type(return_value_);
-  data.data.executor_result.__set_time_finished(rms::common::getTimestamp());
+  executor_result.__set_id(id_);
+  executor_result.__set_code(return_code_);
+  executor_result.__set_return_type(return_value_);
+  executor_result.__set_time_finished(rms::common::getTimestamp());
+  data.data.__set_executor_result(std::move(executor_result));
   res.data.emplace_back(std::move(data));
   RmsReporterClient::getInstance().getRequestClient().sendRequest(
       RequestProtocol::kTCP, std::move(res));

@@ -41,9 +41,8 @@ int SysConsumer::stop() {
   return 0;
 }
 void SysConsumer::triggerConsume() {
-  consume_mutex_.lock();
+  std::lock_guard<std::mutex> lk(consumer_mutex_);
   consume_cond_.notify_one();
-  consume_mutex_.unlock();
 }
 
 }  // namespace rms::reporter

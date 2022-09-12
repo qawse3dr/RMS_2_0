@@ -240,4 +240,28 @@ class RmsDatabase {
 
 #define RMS_DB_FETCH_USAGE_TABLE_ON_DATE_WITH_ID
 
+#define RMS_DB_CREATE_EXECUTOR_TABLE      \
+  "CREATE TABLE executor_table("          \
+  "executor_id INTEGER NOT NULL,"         \
+  "computer_id INT NOT NULL,"             \
+  "return_code INT,"                      \
+  "return_type INT,"                      \
+  "start_time INT NOT NULL,"              \
+  "end_time INT,"                         \
+  "name VARCHAR(128) NOT NULL,"           \
+  "PRIMARY KEY (executor_id),"            \
+  "FOREIGN KEY (computer_id) REFERENCES " \
+  "computer_table(computer_id));"
+
+#define RMS_DB_INSERT_EXECUTOR_TABLE                          \
+  "INSERT INTO executor_table(computer_id, start_time, name)" \
+  "values ( " RMS_DB_TYPE_FMT_INT "," RMS_DB_TYPE_FMT_INT     \
+  "," RMS_DB_TYPE_FMT_STRING ");"
+
+#define RMS_DB_UPDATE_EXECUTOR_TABLE                                         \
+  "UPDATE executor_table"                                                    \
+  " SET end_time= " RMS_DB_TYPE_FMT_INT ", return_code=" RMS_DB_TYPE_FMT_INT \
+  ", return_type=" RMS_DB_TYPE_FMT_INT                                       \
+  " WHERE executor_id = " RMS_DB_TYPE_FMT_INT ";"
+
 #endif  // _INCLUDE_RMS_COMMON_RMS_DATABASE_H_

@@ -9,13 +9,13 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
+#include "rms/reporter/platform/reporter/cpu_reporter.h"
+
 #include <array>
 #include <chrono>
 #include <iostream>
 #include <memory>
 #include <thread>
-
-#include "rms/reporter/platform/reporter/cpu_reporter.h"
 
 namespace rms::reporter {
 
