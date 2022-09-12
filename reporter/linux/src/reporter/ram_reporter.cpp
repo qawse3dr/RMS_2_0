@@ -1,6 +1,6 @@
-#include <iostream>
-
 #include "rms/reporter/platform/reporter/ram_reporter.h"
+
+#include <iostream>
 
 namespace rms::reporter {
 

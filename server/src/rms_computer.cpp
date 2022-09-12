@@ -351,7 +351,7 @@ bool RmsComputer::pushUsageToDB(const int tick) {
                   .c_str());
         }
       }
-      // Insert datapoint into table
+      // Insert data point into table
       res = RmsServer::getInstance().getDatabase().executeQuery(
           fmt::format(RMS_DB_UPDATE_USAGE_TABLE, tick, usage.getData(),
                       date->tm_year + 1900, date->tm_mon + 1, date->tm_mday,

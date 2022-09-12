@@ -124,13 +124,13 @@ int RequestClient::handshakeTCP() {
   std::string port =
       rms::common::RmsConfig::find(RMS_REPORTER_CONFIG_SERVER_PORT);
   if (port.empty()) {
-    std::cerr << "Error:: server PORT not set in confing" << std::endl;
+    std::cerr << "Error:: server PORT not set in config" << std::endl;
     exit(EXIT_FAILURE);
   }
 
   std::string IP = rms::common::RmsConfig::find(RMS_REPORTER_CONFIG_SERVER_IP);
   if (IP.empty()) {
-    std::cerr << "Error:: server IP not set in confing" << std::endl;
+    std::cerr << "Error:: server IP not set in config" << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -195,7 +195,7 @@ int RequestClient::handleResponseData(
       RmsReporterClient::getInstance().triggerSysConsumer();
       break;
     case common::thrift::RmsResponseTypes::kRunCommand:
-      RmsReporterClient::getInstance().runCommand(res_data.data.str_);
+      RmsReporterClient::getInstance().runCommand(res_data.data.command_);
       break;
     case common::thrift::RmsResponseTypes::kRunScript:
       RmsReporterClient::getInstance().runScript(res_data.data.script_);

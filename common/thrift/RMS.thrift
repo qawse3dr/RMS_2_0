@@ -69,7 +69,13 @@ struct RamData {
 
 struct Script {
   1: string filename,
-  2: string script_data
+  2: string script_data,
+  3: i64 id
+}
+
+struct Command {
+  1: string command,
+  2: i64 id
 }
 
 struct ExecutorData {
@@ -87,9 +93,10 @@ enum ExecutorReturnType {
 }
 
 struct ExecutorResult {
-  1: ExecutorReturnType return_type,
-  2: i32 code,
-  3: i64 time_finished
+  1: i64 id,
+  2: ExecutorReturnType return_type,
+  3: i32 code,
+  4: i64 time_finished
 }
 
 // Response
@@ -104,6 +111,7 @@ union RmsReponseValues {
   1: i64 long_,
   2: string str_,
   3: Script script_,
+  4: Command command_
 }
 
 struct RmsResponseData {
@@ -173,7 +181,7 @@ enum RmsRequestTypes {
 
   kExecutorResult = 500,
 
-
+  kPing = 999,
   kUnknown = 1000,
 }
 

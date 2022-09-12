@@ -7,6 +7,8 @@ set(SRC_FILES
     # Consumers
     "src/consumer/ram_consumer.cpp"
     "src/consumer/cpu_consumer.cpp"
+    "src/consumer/ping_consumer.cpp"
+
 
     # RMS reporter client (this is our main class handing everything needed)
     "src/rms_reporter_client.cpp"

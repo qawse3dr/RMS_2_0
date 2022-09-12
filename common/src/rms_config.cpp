@@ -9,11 +9,11 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 
+#include "rms/common/rms_config.h"
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
-
-#include "rms/common/rms_config.h"
 
 namespace rms {
 namespace common {

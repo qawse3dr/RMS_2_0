@@ -9,6 +9,7 @@
  * @author: qawse3dr a.k.a Larry Milne
  */
 #include <arpa/inet.h>
+#include <fmt/format.h>
 #include <linux/socket.h>
 
 #include <iostream>
@@ -33,6 +34,32 @@ namespace server {
 void RmsClient::addResponse(rms::common::thrift::RmsResponseData&& res_data) {
   std::lock_guard<std::mutex> lk(response_mutex_);
   response_queue_.emplace(std::move(res_data));
+}
+
+void RmsClient::runCommand(const std::string& cmd) {
+  // Create response data
+  rms::common::thrift::RmsResponseData res_data;
+  rms::common::thrift::Command res_val;
+  res_val.__set_command(cmd);
+
+  // Add Executor to db TODO - move to other method
+  auto res = RmsServer::getInstance().getDatabase().executeQuery(
+      fmt::format(RMS_DB_INSERT_EXECUTOR_TABLE, getId(),
+                  rms::common::getTimestamp(), cmd)
+          .c_str(),
+      true);
+  if (res.success) {
+    res_val.__set_id(res.last_id);
+  } else {
+    std::cerr << "Failed to add command to db: " << getId() << std::endl;
+    return;
+  }
+
+  res_data.data_type = rms::common::thrift::RmsResponseTypes::kRunCommand;
+  res_data.data.__set_command_(res_val);
+
+  // add response
+  addResponse(std::move(res_data));
 }
 
 int64_t RmsClient::handshake(const int64_t id, const SystemInfo& sys_info) {

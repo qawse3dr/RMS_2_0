@@ -8,6 +8,8 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
+#include "rms/server/client_handler.h"
+
 #include <arpa/inet.h>
 #include <linux/socket.h>
 #include <string.h>
@@ -20,7 +22,6 @@
 #include <memory>
 
 #include "gen-cpp/RMS_types.h"
-#include "rms/server/client_handler.h"
 #include "rms/server/rms_client.h"
 #include "rms/server/rms_server.h"
 

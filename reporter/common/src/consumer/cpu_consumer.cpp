@@ -8,13 +8,14 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
+#include "rms/reporter/common/consumer/cpu_consumer.h"
+
 #include <chrono>
 #include <iostream>
 #include <thread>
 
 #include "rms/common/rms_config.h"
 #include "rms/common/util.h"
-#include "rms/reporter/common/consumer/cpu_consumer.h"
 #include "rms/reporter/common/rms_reporter_client.h"
 
 namespace rms::reporter {

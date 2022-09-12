@@ -8,10 +8,11 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
+#include "rms/server/ingestor/request_log_ingestor.h"
+
 #include <iostream>
 
 #include "rms/common/util.h"
-#include "rms/server/ingestor/request_log_ingestor.h"
 
 using rms::common::thrift::RmsRequestTypes;
 using rms::common::thrift::RmsResponseTypes;

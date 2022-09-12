@@ -55,6 +55,7 @@ class CommandExecutor : public Executor {
    * @param cmd
    * @param shell the shell interpreter that should be used to run the command
    */
+  // TODO: add env arg support
   CommandExecutor(int id, const std::string& cmd, const std::string& shell);
   ~CommandExecutor();
 

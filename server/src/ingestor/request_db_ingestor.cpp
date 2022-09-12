@@ -8,10 +8,13 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
+#include <fmt/format.h>
+
 #include <ctime>
 #include <iostream>
 
 #include "rms/common/util.h"
+#include "rms/server/database/rms_database.h"
 #include "rms/server/ingestor/request_db_ingestor.h"
 #include "rms/server/rms_server.h"
 
@@ -58,6 +61,21 @@ void DbRequestIngestor::ingestRequestData(
       break;
     case rms::common::thrift::RmsRequestTypes::kNetworkUsage:
       break;
+    case rms::common::thrift::RmsRequestTypes::kExecutorResult: {
+      auto res = RmsServer::getInstance().getDatabase().executeQuery(
+          fmt::format(RMS_DB_UPDATE_EXECUTOR_TABLE,
+                      data.data.executor_result.time_finished,
+                      data.data.executor_result.code,
+                      static_cast<int>(data.data.executor_result.return_type),
+                      data.data.executor_result.id)
+              .c_str());
+      if (!res.success) {
+        std::cerr << "Failed to update executor for computer: "
+                  << computer->getComputerId() << std::endl;
+      }
+    }
+
+    break;
   }
 
   // Check if it is time to send some data!
