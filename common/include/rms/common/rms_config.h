@@ -8,17 +8,14 @@
  *
  * @author: qawse3dr a.k.a Larry Milne
  */
-
-#ifndef _RMS_COMMON_RMS_CONFIG_H_
-#define _RMS_COMMON_RMS_CONFIG_H_
+#pragma once
 
 #include <string>
 #include <unordered_map>
 
-namespace rms {
-namespace common {
+namespace rms::common {
 
-// maybe i should make this a singleton but I think a static class should be
+// maybe I should make this a singleton but I think a static class should be
 // fine for now
 class RmsConfig {
  private:
@@ -62,7 +59,4 @@ class RmsConfig {
 #define RMS_SERVER_CONFIG_SQLITE_DB_PATH "db_path"
 // Client Configs (this may not exist idk yet)
 
-}  // namespace common
-}  // namespace rms
-
-#endif  // _RMS_COMMON_RMS_CONFIG_H_
+}  // namespace rms::common

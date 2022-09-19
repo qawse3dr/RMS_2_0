@@ -34,21 +34,23 @@ set(SRC_FILES
 
 
 
+IF (WIN32)
+# Add windows support here
+ELSE()
+  set(PLATFORM_SRC_FILES
+    "platform/linux/src/system_files.cpp")
+ENDIF()
 
 add_library(rms_common STATIC
-    ${SRC_FILES}
-    ${PLATFORM_SRC_FILES}
-    )
+  ${SRC_FILES}
+  ${PLATFORM_SRC_FILES}
+  )
 
 target_link_libraries(rms_common rms_thrift)
-IF (WIN32)
-  # Add windows support here
-ELSE()
-  target_include_directories(rms_common
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/linux/include)
-ENDIF()
     
-
+   
+    
 target_include_directories(rms_common 
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
-    )
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/platform/include
+)
